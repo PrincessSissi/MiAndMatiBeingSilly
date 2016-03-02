@@ -46,7 +46,7 @@ public class JoueurArtificiel implements Joueur {
 
     @Override
     public String getAuteurs() {
-        return "Prénom1 Nom1 (CODE00000001)  et  Prénom2 Nom2 (CODE00000002)";
+        return "Simon Drouin (DROS04078908)  et  Prénom2 Nom2 (CODE00000002)";
     }
 
 
