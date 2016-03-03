@@ -49,7 +49,7 @@ public class JoueurArtificiel implements Joueur {
 
 
     // noJoueur est 0 ou 1.  (0 ==> max, 1 ==> min)
-    // Pseudo code de wiki, on fera la version NegaMax si on desire simplifier le code.
+    // Pseudo code de wiki, la version NegaMax
     // https://fr.wikipedia.org/wiki/%C3%89lagage_alpha-b%C3%AAta
     private int[] alphaBeta(int noJoueur, Grille grille, int alpha, int beta, int noCaseVide){
         if(grille.nbLibre() == 0) {
