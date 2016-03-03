@@ -33,8 +33,12 @@ public class JoueurArtificiel implements Joueur {
      */
     @Override
     public Position getProchainCoup(Grille grille, int delais) {
-        // retourne une value et non un choix pour linstant
-        int[] choix = alphaBeta(0, grille, Integer.MIN_VALUE, Integer.MAX_VALUE, getCasesVides(grille).get(0));
+        // Cas limite : passer la première case vide.
+        // Donc éventuellement élaguer les cases pertinentes d'être évaluées en premier.
+
+        ArrayList<Integer> casesVides = getCasesVides(grille);
+
+        int[] choix = alphaBeta(0, grille, Integer.MIN_VALUE, Integer.MAX_VALUE, casesVides.get(0));
         assert(choix[0] != -1);
 
         int nbCol = grille.getData()[0].length;
@@ -51,9 +55,11 @@ public class JoueurArtificiel implements Joueur {
     // noJoueur est 0 ou 1.  (0 ==> max, 1 ==> min)
     // Pseudo code de wiki, la version NegaMax
     // https://fr.wikipedia.org/wiki/%C3%89lagage_alpha-b%C3%AAta
+    //
+    // Je retourne le format [numeroCase , valeur] pour éventuellement garder une trace des noeuds
+    // afin de pouvoir retourner une valeur pertinente en temps réel.
     private int[] alphaBeta(int noJoueur, Grille grille, int alpha, int beta, int noCaseVide){
         if(grille.nbLibre() == 0) {
-            System.out.println("VALUEEEEE");
             return new int[]{noCaseVide, evaluate(noCaseVide)};
         }
 
@@ -62,7 +68,7 @@ public class JoueurArtificiel implements Joueur {
         // J'ai gardé le arraylist du prof, pour éventuellement faire un élagage des noeuds à visiter.
         // Pour l'instant je met toutes les cases vides.
         ArrayList<Integer> casesVides = getCasesVides(grille);
-        int bestValue = Integer.MIN_VALUE;
+        int[] meilleurCoup = {noCaseVide, Integer.MIN_VALUE};
 
         for(int i = 0; i < casesVides.size(); i++){
             Grille grilleProchainCoup = grille.clone();
@@ -71,18 +77,18 @@ public class JoueurArtificiel implements Joueur {
             int[] coup = alphaBeta((noJoueur+1)%2, grilleProchainCoup, -beta, -alpha, casesVides.get(i));
             coup[1] = -coup[1];
 
-            if(coup[1] > bestValue) {
-                bestValue = coup[1];
+            if(coup[1] > meilleurCoup[1]) {
+                meilleurCoup = new int[]{casesVides.get(i), coup[1]};
 
-                if(bestValue > alpha) {
-                    alpha = bestValue;
+                if(meilleurCoup[1] > alpha) {
+                    alpha = meilleurCoup[1];
 
-                    if(alpha >= beta) return new int[]{noCaseVide, bestValue};
+                    if(alpha >= beta) return meilleurCoup;
                 }
             }
         }
 
-        return new int[]{noCaseVide, bestValue};
+        return meilleurCoup;
     }
 
     private int evaluate(int coup){
