@@ -33,15 +33,13 @@ public class JoueurArtificiel implements Joueur {
      */
     @Override
     public Position getProchainCoup(Grille grille, int delais) {
-        ArrayList<Integer> casesvides = new ArrayList<Integer>();
-        int nbcol = grille.getData()[0].length;
-        for(int l=0;l<grille.getData().length;l++)
-            for(int c=0;c<nbcol;c++)
-                if(grille.getData()[l][c]==0)
-                    casesvides.add(l*nbcol+c);
-        int choix = random.nextInt(casesvides.size());
-        choix = casesvides.get(choix);
-        return new Position(choix / nbcol, choix % nbcol);
+        // retourne une value et non un choix pour linstant
+        int[] choix = alphaBeta(0, grille, Integer.MIN_VALUE, Integer.MAX_VALUE, getCasesVides(grille).get(0));
+        assert(choix[0] != -1);
+
+        int nbCol = grille.getData()[0].length;
+
+        return new Position(choix[0] / nbCol, choix[0] % nbCol);
     }
 
     @Override
@@ -50,4 +48,56 @@ public class JoueurArtificiel implements Joueur {
     }
 
 
+    // noJoueur est 0 ou 1.  (0 ==> max, 1 ==> min)
+    // Pseudo code de wiki, on fera la version NegaMax si on desire simplifier le code.
+    // https://fr.wikipedia.org/wiki/%C3%89lagage_alpha-b%C3%AAta
+    private int[] alphaBeta(int noJoueur, Grille grille, int alpha, int beta, int noCaseVide){
+        if(grille.nbLibre() == 0) {
+            System.out.println("VALUEEEEE");
+            return new int[]{noCaseVide, evaluate(noCaseVide)};
+        }
+
+        if(noCaseVide != -1) System.out.println("l : " + noCaseVide / grille.getData()[0].length + "c : " + noCaseVide % grille.getData()[0].length);
+
+        // J'ai gardé le arraylist du prof, pour éventuellement faire un élagage des noeuds à visiter.
+        // Pour l'instant je met toutes les cases vides.
+        ArrayList<Integer> casesVides = getCasesVides(grille);
+        int bestValue = Integer.MIN_VALUE;
+
+        for(int i = 0; i < casesVides.size(); i++){
+            Grille grilleProchainCoup = grille.clone();
+            grilleProchainCoup.set(casesVides.get(i) / grille.getData()[0].length, casesVides.get(i) % grille.getData()[0].length, (noJoueur+1)%2);
+
+            int[] coup = alphaBeta((noJoueur+1)%2, grilleProchainCoup, -beta, -alpha, casesVides.get(i));
+            coup[1] = -coup[1];
+
+            if(coup[1] > bestValue) {
+                bestValue = coup[1];
+
+                if(bestValue > alpha) {
+                    alpha = bestValue;
+
+                    if(alpha >= beta) return new int[]{noCaseVide, bestValue};
+                }
+            }
+        }
+
+        return new int[]{noCaseVide, bestValue};
+    }
+
+    private int evaluate(int coup){
+        // TODO
+        return 1;
+    }
+
+    private ArrayList<Integer> getCasesVides(Grille grille){
+        ArrayList<Integer> casesVides = new ArrayList<Integer>();
+        int nbcol = grille.getData()[0].length;
+        for(int l=0;l<grille.getData().length;l++)
+            for(int c=0;c<nbcol;c++)
+                if(grille.getData()[l][c]==0)
+                    casesVides.add(l*nbcol+c);
+
+        return casesVides;
+    }
 }
