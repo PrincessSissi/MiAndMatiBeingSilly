@@ -22,6 +22,12 @@ public class JoueurArtificiel implements Joueur {
     private final Random random = new Random();
 
     private static int COUNT = 0; //DEBUG
+    private int PROFONDEUR_MAX = 4;
+
+    private static long DEBUT_TIMER = 0;
+    private static long ALMOST_TWO_SECONDS = 1900;
+    private static int TIMER_CONTINUE = 0;
+    private static int TIMER_STOP = 1;
 
     /**
      * Voici la fonction à modifier.
@@ -39,13 +45,13 @@ public class JoueurArtificiel implements Joueur {
         // DEBUG
         COUNT = 0;
 
+        DEBUT_TIMER = System.currentTimeMillis();
+
         // Cas limite : passer la première case vide.
         // Donc éventuellement élaguer les cases pertinentes d'être évaluées en premier.
-
         ArrayList<Integer> casesVides = getCasesVides(grille);
 
-        int[] choix = alphaBeta(0, grille, Integer.MIN_VALUE, Integer.MAX_VALUE, casesVides.get(0));
-        assert(choix[0] != -1);
+        int[] choix = negaMax(0, grille, Integer.MIN_VALUE, Integer.MAX_VALUE, casesVides.get(0), 0);
 
         int nbCol = grille.getData()[0].length;
 
@@ -61,13 +67,16 @@ public class JoueurArtificiel implements Joueur {
     // Pseudo code de wiki, la version NegaMax
     // https://fr.wikipedia.org/wiki/%C3%89lagage_alpha-b%C3%AAta
     //
-    // Je retourne le format [numeroCase , valeur] pour éventuellement garder une trace des noeuds
+    // Je retourne le format [numeroCase , valeur, flag_du_timer] pour éventuellement garder une trace des noeuds
     // afin de pouvoir retourner une valeur pertinente en temps réel.
-    private int[] alphaBeta(int noJoueur, Grille grille, int alpha, int beta, int positionCoup){
+    private int[] negaMax(int noJoueur, Grille grille, int alpha, int beta, int positionCoup, int profondeur){
+        if(System.currentTimeMillis() - DEBUT_TIMER > ALMOST_TWO_SECONDS)
+            return new int[]{positionCoup, evaluate(grille), TIMER_STOP};
+
         int finPartie = UtilitaireGrille.finPartie(grille, positionCoup);
-        if(finPartie != -1) {
-            return new int[]{positionCoup, evaluate(finPartie)};
-        }
+        if(finPartie != -1) return new int[]{positionCoup, finPartie*Integer.MAX_VALUE, TIMER_CONTINUE};
+
+        if (profondeur == PROFONDEUR_MAX) return new int[]{positionCoup ,evaluate(grille), TIMER_CONTINUE};
 
         //DEBUG
         System.out.println("Count: " + COUNT++);
@@ -76,17 +85,24 @@ public class JoueurArtificiel implements Joueur {
         // J'ai gardé le arraylist du prof, pour éventuellement faire un élagage des noeuds à visiter.
         // Pour l'instant je met toutes les cases vides.
         ArrayList<Integer> casesVides = getCasesVides(grille);
-        int[] meilleurCoup = {positionCoup, Integer.MIN_VALUE};
+        int[] meilleurCoup = {positionCoup, Integer.MIN_VALUE, TIMER_CONTINUE};
 
         for(int i = 0; i < casesVides.size(); i++){
             Grille grilleProchainCoup = grille.clone();
             grilleProchainCoup.set(casesVides.get(i) / grille.getData()[0].length, casesVides.get(i) % grille.getData()[0].length, (noJoueur+1)%2);
 
-            int[] coup = alphaBeta((noJoueur+1)%2, grilleProchainCoup, -beta, -alpha, casesVides.get(i));
+            int[] coup = negaMax((noJoueur+1)%2, grilleProchainCoup, -beta, -alpha, casesVides.get(i), profondeur++);
+            if (coup[2] == TIMER_STOP) {
+                coup[0] = casesVides.get(i);
+                meilleurCoup[2] = TIMER_STOP;
+
+                return (meilleurCoup[1] > coup[1] ? meilleurCoup : coup);
+            }
+
             coup[1] = -coup[1];
 
             if(coup[1] > meilleurCoup[1]) {
-                meilleurCoup = new int[]{casesVides.get(i), coup[1]};
+                meilleurCoup = new int[]{casesVides.get(i), coup[1], TIMER_CONTINUE};
 
                 if(meilleurCoup[1] > alpha) {
                     alpha = meilleurCoup[1];
@@ -99,8 +115,14 @@ public class JoueurArtificiel implements Joueur {
         return meilleurCoup;
     }
 
-    private int evaluate(int finPartie){
-        return finPartie * 1000;
+    private int evaluate(Grille grille){
+        return 1;
+        // points_positifs_pions colles  -  pions colles de ladversaire
+
+        // nb_pions_colles_verticaux
+        // nb_pions_colles_horizontaux
+        // nb_pions_colles_diagonaux_ascendant
+        // nb_pions_colles_diagonaux_descendant
     }
 
     private ArrayList<Integer> getCasesVides(Grille grille){
