@@ -92,14 +92,14 @@ public class JoueurArtificiel implements Joueur {
             grilleProchainCoup.set(casesVides.get(i) / grille.getData()[0].length, casesVides.get(i) % grille.getData()[0].length, (noJoueur+1)%2);
 
             int[] coup = negaMax((noJoueur+1)%2, grilleProchainCoup, -beta, -alpha, casesVides.get(i), profondeur++);
+            coup[1] = -coup[1];
+
             if (coup[2] == TIMER_STOP) {
                 coup[0] = casesVides.get(i);
                 meilleurCoup[2] = TIMER_STOP;
 
                 return (meilleurCoup[1] > coup[1] ? meilleurCoup : coup);
             }
-
-            coup[1] = -coup[1];
 
             if(coup[1] > meilleurCoup[1]) {
                 meilleurCoup = new int[]{casesVides.get(i), coup[1], TIMER_CONTINUE};
