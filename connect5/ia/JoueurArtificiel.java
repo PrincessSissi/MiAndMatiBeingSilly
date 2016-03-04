@@ -1,4 +1,5 @@
 package connect5.ia;
+import connect5.ia.UtilitaireGrille;
 
 /*
  * Si vous utilisez Java, vous devez modifier ce fichier-ci.
@@ -6,7 +7,7 @@ package connect5.ia;
  * Vous pouvez ajouter d'autres classes sous le package connect5.ia.
  *
  * Simon Drouin     (DROS04078908)
- * Prénom Nom    (CODE00000002)
+ * Mathy Scott      (SCOM15079104)
  */
 
 import connect5.Grille;
@@ -19,6 +20,8 @@ import java.util.Random;
 public class JoueurArtificiel implements Joueur {
 
     private final Random random = new Random();
+
+    private static int COUNT = 0; //DEBUG
 
     /**
      * Voici la fonction à modifier.
@@ -33,6 +36,9 @@ public class JoueurArtificiel implements Joueur {
      */
     @Override
     public Position getProchainCoup(Grille grille, int delais) {
+        // DEBUG
+        COUNT = 0;
+
         // Cas limite : passer la première case vide.
         // Donc éventuellement élaguer les cases pertinentes d'être évaluées en premier.
 
@@ -48,9 +54,8 @@ public class JoueurArtificiel implements Joueur {
 
     @Override
     public String getAuteurs() {
-        return "Simon Drouin (DROS04078908)  et  Prénom2 Nom2 (CODE00000002)";
+        return "Simon Drouin (DROS04078908)  et  Mathy Scott (SCOM15079104)";
     }
-
 
     // noJoueur est 0 ou 1.  (0 ==> max, 1 ==> min)
     // Pseudo code de wiki, la version NegaMax
@@ -58,17 +63,20 @@ public class JoueurArtificiel implements Joueur {
     //
     // Je retourne le format [numeroCase , valeur] pour éventuellement garder une trace des noeuds
     // afin de pouvoir retourner une valeur pertinente en temps réel.
-    private int[] alphaBeta(int noJoueur, Grille grille, int alpha, int beta, int noCaseVide){
-        if(grille.nbLibre() == 0) {
-            return new int[]{noCaseVide, evaluate(noCaseVide)};
+    private int[] alphaBeta(int noJoueur, Grille grille, int alpha, int beta, int positionCoup){
+        int finPartie = UtilitaireGrille.finPartie(grille, positionCoup);
+        if(finPartie != -1) {
+            return new int[]{positionCoup, evaluate(finPartie)};
         }
 
-        if(noCaseVide != -1) System.out.println("l : " + noCaseVide / grille.getData()[0].length + "c : " + noCaseVide % grille.getData()[0].length);
+        //DEBUG
+        System.out.println("Count: " + COUNT++);
+        System.out.println("l : " + positionCoup / grille.getData()[0].length + "c : " + positionCoup % grille.getData()[0].length);
 
         // J'ai gardé le arraylist du prof, pour éventuellement faire un élagage des noeuds à visiter.
         // Pour l'instant je met toutes les cases vides.
         ArrayList<Integer> casesVides = getCasesVides(grille);
-        int[] meilleurCoup = {noCaseVide, Integer.MIN_VALUE};
+        int[] meilleurCoup = {positionCoup, Integer.MIN_VALUE};
 
         for(int i = 0; i < casesVides.size(); i++){
             Grille grilleProchainCoup = grille.clone();
@@ -91,9 +99,8 @@ public class JoueurArtificiel implements Joueur {
         return meilleurCoup;
     }
 
-    private int evaluate(int coup){
-        // TODO
-        return 1;
+    private int evaluate(int finPartie){
+        return finPartie * 1000;
     }
 
     private ArrayList<Integer> getCasesVides(Grille grille){
