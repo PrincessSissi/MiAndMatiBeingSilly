@@ -6,20 +6,27 @@ public class UtilitaireGrille {
     public static int getNbCols(Grille grille){ return grille.getData()[0].length; }
     public static int getNbLigs(Grille grille){ return grille.getData().length; }
 
-    public static ArrayList<ArrayList<Integer>> construireBlocsHorizontaux(Grille grille) {
-        ArrayList<ArrayList<Integer>> blocs = new ArrayList<ArrayList<Integer>>();
+    public static ArrayList<ArrayList<int[]>> construireBlocsHorizontaux(Grille grille) {
+        ArrayList<ArrayList<int[]>> blocs = new ArrayList<ArrayList<int[]>>();
 
         int noBloc = 0;
 
         for (int i = 0; i < getNbLigs(grille); i++) {
 
-            ArrayList<Integer> innerBlocs = new ArrayList<Integer>();
+            ArrayList<int[]> innerBlocs = new ArrayList<int[]>();
             int noInnerBloc = 0;
 
             for (int j = 0; j < getNbCols(grille); j++) {
                 int pionCourant = grille.get(i,j);
                 if(j - 1 != -1 && pionCourant != grille.get(i , j - 1)) noInnerBloc++;
-                innerBlocs.add(noInnerBloc, pionCourant);
+
+                if(noInnerBloc >= innerBlocs.size())
+                    innerBlocs.add(noInnerBloc, new int[]{pionCourant, 1});
+                else {
+                    int[] bloc = innerBlocs.get(noInnerBloc);
+                    bloc[1]++;
+                    innerBlocs.set(noInnerBloc, bloc);
+                }
             }
 
             blocs.add(noBloc++, innerBlocs);
@@ -28,20 +35,27 @@ public class UtilitaireGrille {
         return blocs;
     }
 
-    public static ArrayList<ArrayList<Integer>> construireBlocsVerticaux(Grille grille) {
-        ArrayList<ArrayList<Integer>> blocs = new ArrayList<ArrayList<Integer>>();
+    public static ArrayList<ArrayList<int[]>> construireBlocsVerticaux(Grille grille) {
+        ArrayList<ArrayList<int[]>> blocs = new ArrayList<ArrayList<int[]>>();
 
         int noBloc = 0;
 
         for (int i = 0; i < getNbCols(grille); i++) {
 
-            ArrayList<Integer> innerBlocs = new ArrayList<Integer>();
+            ArrayList<int[]> innerBlocs = new ArrayList<int[]>();
             int noInnerBloc = 0;
 
             for (int j = 0; j < getNbLigs(grille); j++) {
                 int pionCourant = grille.get(j,i);
-                if(j - 1 != -1 && pionCourant != grille.get(j - 1, i)) noInnerBloc++;
-                innerBlocs.add(noInnerBloc, pionCourant);
+                if(j - 1 != -1 && pionCourant != grille.get(j - 1 , i)) noInnerBloc++;
+
+                if(noInnerBloc >= innerBlocs.size())
+                    innerBlocs.add(noInnerBloc, new int[]{pionCourant, 1});
+                else {
+                    int[] bloc = innerBlocs.get(noInnerBloc);
+                    bloc[1]++;
+                    innerBlocs.set(noInnerBloc, bloc);
+                }
             }
 
             blocs.add(noBloc++, innerBlocs);
