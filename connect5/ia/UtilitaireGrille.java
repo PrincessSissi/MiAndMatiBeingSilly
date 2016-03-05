@@ -172,7 +172,7 @@ public class UtilitaireGrille {
         return 0;
     }
 
-    private static Boolean ligneHorizontaleGagnante(Grille grille, int positionCoup){
+    private static Boolean ligneVerticaleGagnante(Grille grille, int positionCoup){
         int nbCols = getNbCols(grille);
         int nbLigs = getNbLigs(grille);
         int x = positionCoup / nbCols;
@@ -217,7 +217,7 @@ public class UtilitaireGrille {
         return nbAlignes == 5;
     }
 
-    private static Boolean ligneVerticaleGagnante(Grille grille, int positionCoup){
+    private static Boolean ligneHorizontaleGagnante(Grille grille, int positionCoup){
         int nbCols = getNbCols(grille);
         int nbLigs = getNbLigs(grille);
         int x = positionCoup / nbCols;
