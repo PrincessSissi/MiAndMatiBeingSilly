@@ -116,13 +116,12 @@ public class JoueurArtificiel implements Joueur {
     }
 
     private int evaluate(Grille grille){
-        return 1;
-        // points_positifs_pions colles  -  pions colles de ladversaire
+        ArrayList<ArrayList<int[]>> blocsVerticaux = UtilitaireGrille.construireBlocsVerticaux(grille);
+        ArrayList<ArrayList<int[]>> blocsHorizontaux = UtilitaireGrille.construireBlocsHorizontaux(grille);
+        ArrayList<ArrayList<int[]>> blocsDiagonauxDescedants = UtilitaireGrille.construireBlocsDiagonauxDescendants(grille);
+        ArrayList<ArrayList<int[]>> blocsDiagonauxAscendants = UtilitaireGrille.construireBlocsDiagonauxAscendants(grille);
 
-        // nb_pions_colles_verticaux
-        // nb_pions_colles_horizontaux
-        // nb_pions_colles_diagonaux_ascendant
-        // nb_pions_colles_diagonaux_descendant
+        return 1;
     }
 
     private ArrayList<Integer> getCasesVides(Grille grille){
