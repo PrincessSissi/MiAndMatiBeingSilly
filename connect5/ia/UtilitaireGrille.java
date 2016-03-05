@@ -69,11 +69,11 @@ public class UtilitaireGrille {
 
         int noBloc = 0;
 
-        for (int i = 0; i < nbLigs(grille); i++) {
+        for (int i = 0; i < getNbLigs(grille); i++) {
             ArrayList<int[]> innerBlocs = new ArrayList<int[]>();
             int noInnerBloc = 0;
 
-            for(int l = i, int c = 0; l < nbLigs(grille) && c < nbCols(grille); l++, c++){
+            for(int l = i, c = 0; l < getNbLigs(grille) && c < getNbCols(grille); l++, c++){
                 int pionCourant = grille.get(l, c);
                 if(l - 1 != -1 && c - 1 != -1 && pionCourant != grille.get(l - 1 , c - 1)) noInnerBloc++;
 
@@ -89,11 +89,11 @@ public class UtilitaireGrille {
             blocs.add(noBloc++, innerBlocs);
         }
 
-        for (int i = 1; i < nbCols; i++) {
+        for (int i = 1; i < getNbCols(grille); i++) {
             ArrayList<int[]> innerBlocs = new ArrayList<int[]>();
             int noInnerBloc = 0;
 
-            for(int l = 0, int c = i; l < nbLigs(grille) && c < nbCols(grille); l++, c++){
+            for(int l = 0, c = i; l < getNbLigs(grille) && c < getNbCols(grille); l++, c++){
                 int pionCourant = grille.get(l, c);
                 if(l - 1 != -1 && c - 1 != -1 && pionCourant != grille.get(l - 1 , c - 1)) noInnerBloc++;
 
@@ -117,13 +117,13 @@ public class UtilitaireGrille {
 
         int noBloc = 0;
 
-        for (int i = 0; i < nbLigs(grille); i++) {
+        for (int i = 0; i < getNbLigs(grille); i++) {
             ArrayList<int[]> innerBlocs = new ArrayList<int[]>();
             int noInnerBloc = 0;
 
-            for(int l = i, int c = 0; l < nbLigs(grille) && c < nbCols(grille); l++, c++){
+            for(int l = i, c = 0; l < getNbLigs(grille) && c < getNbCols(grille); l++, c++){
                 int pionCourant = grille.get(l, c);
-                if(l + 1 != nbLigs(grille) && c - 1 != -1 && pionCourant != grille.get(l - 1 , c + 1)) noInnerBloc++;
+                if(l + 1 != getNbLigs(grille) && c - 1 != -1 && pionCourant != grille.get(l - 1 , c + 1)) noInnerBloc++;
 
                 if(noInnerBloc >= innerBlocs.size())
                     innerBlocs.add(noInnerBloc, new int[]{pionCourant, 1});
@@ -137,13 +137,13 @@ public class UtilitaireGrille {
             blocs.add(noBloc++, innerBlocs);
         }
 
-        for (int i = 1; i < nbCols; i++) {
+        for (int i = 1; i < getNbCols(grille); i++) {
             ArrayList<int[]> innerBlocs = new ArrayList<int[]>();
             int noInnerBloc = 0;
 
-            for(int l = nbLigs(grille) - 1, int c = i; l < nbLigs(grille) && c < nbCols(grille); l++, c++){
+            for(int l = getNbLigs(grille) - 1, c = i; l < getNbLigs(grille) && c < getNbCols(grille); l++, c++){
                 int pionCourant = grille.get(l, c);
-                if(l - 1 != -1 && c + 1 != nbCols(grille) && pionCourant != grille.get(l - 1 , c + 1)) noInnerBloc++;
+                if(l - 1 != -1 && c + 1 != getNbCols(grille) && pionCourant != grille.get(l - 1 , c + 1)) noInnerBloc++;
 
                 if(noInnerBloc >= innerBlocs.size())
                     innerBlocs.add(noInnerBloc, new int[]{pionCourant, 1});
