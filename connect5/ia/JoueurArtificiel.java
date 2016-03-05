@@ -1,4 +1,5 @@
 package connect5.ia;
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import connect5.ia.UtilitaireGrille;
 
 /*
@@ -21,7 +22,7 @@ public class JoueurArtificiel implements Joueur {
     private final Random random = new Random();
 
     private static int COUNT = 0; //DEBUG
-    private int PROFONDEUR_MAX = 5;
+    private int PROFONDEUR_MAX = 4;
 
     private static long DEBUT_TIMER = 0;
     private static long ALMOST_TWO_SECONDS = 1900;
@@ -49,16 +50,18 @@ public class JoueurArtificiel implements Joueur {
 
         DEBUT_TIMER = System.currentTimeMillis();
         this.debugGrille = grille.clone();
-        // Cas limite : passer la première case vide.
-        // Donc éventuellement élaguer les cases pertinentes d'être évaluées en premier.
+
+        int nbCols = grille.getData()[0].length;
         ArrayList<Integer> casesVides = getCasesVides(grille);
+
+        int[] gagneOuPerdOuNul = UtilitaireGrille.finPartie(grille, casesVides);
+        if(gagneOuPerdOuNul[0] == 1)
+            return new Position(gagneOuPerdOuNul[1] / nbCols, gagneOuPerdOuNul[1] % nbCols);
+
         int noJoueur = (grille.getSize() - casesVides.size()) % 2;
-        //grille.set(casesVides.get(0) / grille.getData()[0].length, casesVides.get(0) % grille.getData()[0].length, noJoueur);
-        int[] choix = negaMax(++noJoueur, grille, Integer.MIN_VALUE, Integer.MAX_VALUE, -1, 1);
+        int[] choix = negaMax(++noJoueur, grille, Integer.MIN_VALUE, Integer.MAX_VALUE, -1, 0);
 
-        int nbCol = grille.getData()[0].length;
-
-        return new Position(choix[0] / nbCol, choix[0] % nbCol);
+        return new Position(choix[0] / nbCols, choix[0] % nbCols);
     }
 
     public int getAdversaire(int noJoueur){
@@ -80,17 +83,13 @@ public class JoueurArtificiel implements Joueur {
         //if(System.currentTimeMillis() - DEBUT_TIMER > ALMOST_TWO_SECONDS)
         //    return new int[]{positionCoup, evaluate(grille, noJoueur), TIMER_STOP};
 
-        int finPartie = UtilitaireGrille.finPartie(grille, positionCoup);
-        if(finPartie != 0) return new int[]{positionCoup, (int)finPartie*Integer.MAX_VALUE/profondeur, TIMER_CONTINUE};
-
         if (profondeur == PROFONDEUR_MAX) return new int[]{positionCoup ,evaluate(grille,noJoueur), TIMER_CONTINUE};
         profondeur++;
+
         //DEBUG
         System.out.println("Count: " + COUNT++);
         System.out.println("l : " + positionCoup / grille.getData()[0].length + "c : " + positionCoup % grille.getData()[0].length);
 
-        // J'ai gardé le arraylist du prof, pour éventuellement faire un élagage des noeuds à visiter.
-        // Pour l'instant je met toutes les cases vides.
         ArrayList<Integer> casesVides = getCasesVides(grille);
         int[] meilleurCoup = {positionCoup, Integer.MIN_VALUE, TIMER_CONTINUE};
 
@@ -129,8 +128,8 @@ public class JoueurArtificiel implements Joueur {
         //ArrayList<ArrayList<int[]>> blocsDiagonauxAscendants = UtilitaireGrille.construireBlocsDiagonauxAscendants(grille);
         int pertinence = UtilitaireGrille.determinerPertinence(blocsVerticaux,noJoueur);
         int pertinenceh = UtilitaireGrille.determinerPertinence(blocsHorizontaux,noJoueur);
-        int pertinenceAdv = UtilitaireGrille.determinerPertinence(blocsVerticaux,getAdversaire(noJoueur));
-        int pertinenceAdvh = UtilitaireGrille.determinerPertinence(blocsHorizontaux,getAdversaire(noJoueur));
+        int pertinenceAdv = UtilitaireGrille.determinerPertinence(blocsVerticaux, getAdversaire(noJoueur));
+        int pertinenceAdvh = UtilitaireGrille.determinerPertinence(blocsHorizontaux, getAdversaire(noJoueur));
         return pertinence+pertinenceh-(pertinenceAdv+pertinenceAdvh);
     }
 

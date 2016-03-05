@@ -161,15 +161,26 @@ public class UtilitaireGrille {
         return blocs;
     }
 
-    public static int finPartie(Grille grille, int positionCoup){
-        if (positionCoup == -1) return 0;
-        if (ligneHorizontaleGagnante(grille, positionCoup)
-            || ligneVerticaleGagnante(grille, positionCoup)
-            || diagonaleDescendantesGagnantes(grille, positionCoup)
-            || diagonaleAscendantesGagnantes(grille, positionCoup)) return 1;
+    public static int[] finPartie(Grille grille, ArrayList<Integer> casesVides){
+        for(int i = 0; i < casesVides.size(); i++) {
+            int coup = casesVides.get(i);
 
-        if (grille.nbLibre() == 0) return -1;
-        return 0;
+            Grille grillePionJoueur1 = grille.clone();
+            grillePionJoueur1.set(coup / getNbCols(grille), coup % getNbCols(grille), 1);
+            Grille grillePionJoueur2 = grille.clone();
+            grillePionJoueur2.set(coup / getNbCols(grille), coup % getNbCols(grille), 2);
+
+            if (grille.nbLibre() == 0
+                || ligneHorizontaleGagnante(grillePionJoueur1, coup)
+                || ligneVerticaleGagnante(grillePionJoueur1, coup)
+                || diagonaleDescendantesGagnantes(grillePionJoueur1, coup)
+                || diagonaleAscendantesGagnantes(grillePionJoueur1, coup)
+                || ligneHorizontaleGagnante(grillePionJoueur2, coup)
+                || ligneVerticaleGagnante(grillePionJoueur2, coup)
+                || diagonaleDescendantesGagnantes(grillePionJoueur2, coup)
+                || diagonaleAscendantesGagnantes(grillePionJoueur2, coup)) return new int[]{1, coup};
+        }
+        return new int[]{0, 0};
     }
 
     private static Boolean ligneVerticaleGagnante(Grille grille, int positionCoup){
@@ -453,7 +464,7 @@ public class UtilitaireGrille {
                 if (longueur >= 5) return nbPionsConcernes;
             } else {
                 //Si le bloc est ennemi ou nul.
-                //On peut déduire ici que la longueur < 5 et qu'il n'y a plus de possibilités
+                //On peut dï¿½duire ici que la longueur < 5 et qu'il n'y a plus de possibilitï¿½s
                 return 0 ;
             }
             //On passe au bloc suivant a droite
