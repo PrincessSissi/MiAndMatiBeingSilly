@@ -1,6 +1,60 @@
 package connect5.ia;
 import connect5.Grille;
 
+
+/**
+*iterer sur les blocs
+    longueur = longueurde notre bloc
+    nbPionsConcernés = longueur de notre bloc
+    longueur_du_vide_temp = 0
+
+    if  notre bloc
+        if longueur bloc > 5 :  continue
+
+        if a gauche est vide
+            if  deux a gauche n'est pas nous  (enemi ou NULL)
+                longueur += longueur du vide a gauche
+            else
+                longueur += longueur du vide - 1
+        if a droite est vide
+            if  bloc [ j + 1]   = enemi ou NULL
+                longueur += longueur du vide a droite
+                longueur_du_vide_temp = longeur du vide a droite
+            else
+                longueur += longueur du vide - 1
+                longueur_du_vide_temp = longeur du vide a droite  - 1
+
+        if longueur >= 5  return  nbPionsConcernes
+
+        longueur -= longueur_du_vide_temp
+        j = i + 1
+
+        while longueur < 5
+            expand_a_droite
+        end
+///////////
+expand_a_droite
+    if bloc [ j ]  est enemi   RETURN 0
+    if bloc [ j ]  est vide
+
+        if  bloc [ j + 1]   = enemi ou NULL
+            longueur += longueur du vide a droite
+        else
+            longueur += longueur du vide - 1
+        if longueur >= 5  return nbBlocsConcernes
+        j ++
+
+    if bloc [ j ]  est a nous
+
+        longueur += longueur du bloc [ j ] + 1
+        nbPionsConcernes += longueur du bloc [ j ]
+
+        if longueur == 5  return nbPionsConcernes
+        if longueur > 5 return 0
+        j ++
+
+*/
+
 public class UtilitaireGrille {
     public static int finPartie(Grille grille, int positionCoup){
         if (ligneHorizontaleGagnante(grille, positionCoup)
@@ -198,5 +252,9 @@ public class UtilitaireGrille {
             break;
         }
         return nbAlignes == 5;
+    }
+
+    public int test(){
+
     }
 }
