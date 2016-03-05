@@ -21,7 +21,7 @@ public class JoueurArtificiel implements Joueur {
     private final Random random = new Random();
 
     private static int COUNT = 0; //DEBUG
-    private int PROFONDEUR_MAX = 4;
+    private int PROFONDEUR_MAX = 5;
 
     private static long DEBUT_TIMER = 0;
     private static long ALMOST_TWO_SECONDS = 1900;
@@ -53,7 +53,8 @@ public class JoueurArtificiel implements Joueur {
         // Donc éventuellement élaguer les cases pertinentes d'être évaluées en premier.
         ArrayList<Integer> casesVides = getCasesVides(grille);
         int noJoueur = (grille.getSize() - casesVides.size()) % 2;
-        int[] choix = negaMax(++noJoueur, grille, Integer.MIN_VALUE, Integer.MAX_VALUE, casesVides.get(0), 0);
+        //grille.set(casesVides.get(0) / grille.getData()[0].length, casesVides.get(0) % grille.getData()[0].length, noJoueur);
+        int[] choix = negaMax(++noJoueur, grille, Integer.MIN_VALUE, Integer.MAX_VALUE, -1, 1);
 
         int nbCol = grille.getData()[0].length;
 
@@ -80,7 +81,7 @@ public class JoueurArtificiel implements Joueur {
         //    return new int[]{positionCoup, evaluate(grille, noJoueur), TIMER_STOP};
 
         int finPartie = UtilitaireGrille.finPartie(grille, positionCoup);
-        if(finPartie != -1) return new int[]{positionCoup, finPartie*Integer.MAX_VALUE, TIMER_CONTINUE};
+        if(finPartie != 0) return new int[]{positionCoup, (int)finPartie*Integer.MAX_VALUE/profondeur, TIMER_CONTINUE};
 
         if (profondeur == PROFONDEUR_MAX) return new int[]{positionCoup ,evaluate(grille,noJoueur), TIMER_CONTINUE};
         profondeur++;
@@ -100,12 +101,12 @@ public class JoueurArtificiel implements Joueur {
             int[] coup = negaMax(getAdversaire(noJoueur), grilleProchainCoup, -beta, -alpha, casesVides.get(i), profondeur);
             coup[1] = -coup[1];
 
-            if (coup[2] == TIMER_STOP) {
-                coup[0] = casesVides.get(i);
-                meilleurCoup[2] = TIMER_STOP;
+            //if (coup[2] == TIMER_STOP) {
+            //    coup[0] = casesVides.get(i);
+            //    meilleurCoup[2] = TIMER_STOP;
 
-                return (meilleurCoup[1] > coup[1] ? meilleurCoup : coup);
-            }
+            //    return (meilleurCoup[1] > coup[1] ? meilleurCoup : coup);
+            //}
 
             if(coup[1] > meilleurCoup[1]) {
                 meilleurCoup = new int[]{casesVides.get(i), coup[1], TIMER_CONTINUE};
@@ -123,12 +124,14 @@ public class JoueurArtificiel implements Joueur {
 
     private int evaluate(Grille grille, int noJoueur){
         ArrayList<ArrayList<int[]>> blocsVerticaux = UtilitaireGrille.construireBlocsVerticaux(grille);
-        //ArrayList<ArrayList<int[]>> blocsHorizontaux = UtilitaireGrille.construireBlocsHorizontaux(grille);
+        ArrayList<ArrayList<int[]>> blocsHorizontaux = UtilitaireGrille.construireBlocsHorizontaux(grille);
         //ArrayList<ArrayList<int[]>> blocsDiagonauxDescedants = UtilitaireGrille.construireBlocsDiagonauxDescendants(grille);
         //ArrayList<ArrayList<int[]>> blocsDiagonauxAscendants = UtilitaireGrille.construireBlocsDiagonauxAscendants(grille);
         int pertinence = UtilitaireGrille.determinerPertinence(blocsVerticaux,noJoueur);
+        int pertinenceh = UtilitaireGrille.determinerPertinence(blocsHorizontaux,noJoueur);
         int pertinenceAdv = UtilitaireGrille.determinerPertinence(blocsVerticaux,getAdversaire(noJoueur));
-        return pertinence-pertinenceAdv;
+        int pertinenceAdvh = UtilitaireGrille.determinerPertinence(blocsHorizontaux,getAdversaire(noJoueur));
+        return pertinence+pertinenceh-(pertinenceAdv+pertinenceAdvh);
     }
 
     //prof

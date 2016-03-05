@@ -162,13 +162,14 @@ public class UtilitaireGrille {
     }
 
     public static int finPartie(Grille grille, int positionCoup){
+        if (positionCoup == -1) return 0;
         if (ligneHorizontaleGagnante(grille, positionCoup)
             || ligneVerticaleGagnante(grille, positionCoup)
             || diagonaleDescendantesGagnantes(grille, positionCoup)
             || diagonaleAscendantesGagnantes(grille, positionCoup)) return 1;
 
-        if (grille.nbLibre() == 0) return 0;
-        return -1;
+        if (grille.nbLibre() == 0) return -1;
+        return 0;
     }
 
     private static Boolean ligneHorizontaleGagnante(Grille grille, int positionCoup){
@@ -367,6 +368,7 @@ public class UtilitaireGrille {
     static int BLOC_INEXISTANT = -1;
     public static int determinerPertinence(ArrayList<ArrayList<int[]>> grille, int joueur){
         int pertinenceDeLaGrille=0;
+        int POIDS_PERTINENCE = 5;
         //pour chaque ligne
         for(ArrayList<int[]> ligne : grille){
             //pour chaque bloc
@@ -412,7 +414,7 @@ public class UtilitaireGrille {
                         //Analyse du bloc terminee.
                         //Mettre a jour petinence de la grille
                         //Passer au bloc suivant
-                        pertinenceDeLaGrille += (int)Math.pow(5,nbPionsConcernes);
+                        pertinenceDeLaGrille += (int)Math.pow(POIDS_PERTINENCE,nbPionsConcernes);
                         continue;
                     }
                     //Retirer le vide a droite temporaire
@@ -420,7 +422,9 @@ public class UtilitaireGrille {
                     int positionBlocAjouter = i+1;
                     //Analyser vers la droite puis mettre a jour et passer au bloc suivant
                     nbPionsConcernes = ajouterADroite(ligne,positionBlocAjouter, longueur, joueur,nbPionsConcernes);
-                    pertinenceDeLaGrille+= (int)Math.pow(5,nbPionsConcernes);
+                    if( nbPionsConcernes > 0) {
+                        pertinenceDeLaGrille += (int) Math.pow(POIDS_PERTINENCE, nbPionsConcernes);
+                    }
                 }
 
             }
@@ -465,6 +469,7 @@ public class UtilitaireGrille {
                 //non pertinent
                 if( longueur > 5 ) return 0;
             }
+            positionBlocAjouter++;
         }
         //Ne devrait pas arriver.
         return 0;
