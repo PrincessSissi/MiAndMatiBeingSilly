@@ -70,8 +70,8 @@ public class JoueurArtificiel implements Joueur {
     // Je retourne le format [numeroCase , valeur, flag_du_timer] pour éventuellement garder une trace des noeuds
     // afin de pouvoir retourner une valeur pertinente en temps réel.
     private int[] negaMax(int noJoueur, Grille grille, int alpha, int beta, int positionCoup, int profondeur){
-        //if(System.currentTimeMillis() - DEBUT_TIMER > ALMOST_TWO_SECONDS)
-          //  return new int[]{positionCoup, evaluate(grille), TIMER_STOP};
+        if(System.currentTimeMillis() - DEBUT_TIMER > ALMOST_TWO_SECONDS)
+            return new int[]{positionCoup, evaluate(grille), TIMER_STOP};
 
         int finPartie = UtilitaireGrille.finPartie(grille, positionCoup);
         if(finPartie != -1) return new int[]{positionCoup, finPartie*Integer.MAX_VALUE, TIMER_CONTINUE};
