@@ -121,9 +121,9 @@ public class UtilitaireGrille {
             ArrayList<int[]> innerBlocs = new ArrayList<int[]>();
             int noInnerBloc = 0;
 
-            for(int l = i, c = 0; l < getNbLigs(grille) && c < getNbCols(grille); l++, c++){
+            for(int l = i, c = 0; l >= 0 && c < getNbCols(grille); l--, c++){
                 int pionCourant = grille.get(l, c);
-                if(l + 1 != getNbLigs(grille) && c - 1 != -1 && pionCourant != grille.get(l - 1 , c + 1)) noInnerBloc++;
+                if(l + 1 != getNbLigs(grille) && c - 1 != -1 && pionCourant != grille.get(l + 1 , c - 1)) noInnerBloc++;
 
                 if(noInnerBloc >= innerBlocs.size())
                     innerBlocs.add(noInnerBloc, new int[]{pionCourant, 1});
@@ -141,9 +141,9 @@ public class UtilitaireGrille {
             ArrayList<int[]> innerBlocs = new ArrayList<int[]>();
             int noInnerBloc = 0;
 
-            for(int l = getNbLigs(grille) - 1, c = i; l < getNbLigs(grille) && c < getNbCols(grille); l++, c++){
+            for(int l = getNbLigs(grille) - 1, c = i; l >= 0 && c < getNbCols(grille); l--, c++){
                 int pionCourant = grille.get(l, c);
-                if(l - 1 != -1 && c + 1 != getNbCols(grille) && pionCourant != grille.get(l - 1 , c + 1)) noInnerBloc++;
+                if(l + 1 != getNbLigs(grille) && c + 1 != getNbCols(grille) && pionCourant != grille.get(l + 1 , c - 1)) noInnerBloc++;
 
                 if(noInnerBloc >= innerBlocs.size())
                     innerBlocs.add(noInnerBloc, new int[]{pionCourant, 1});
