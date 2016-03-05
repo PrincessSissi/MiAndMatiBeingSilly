@@ -1,6 +1,7 @@
 package connect5.ia;
 import connect5.Grille;
 import java.util.ArrayList;
+import java.lang.Math;
 
 public class UtilitaireGrille {
     public static int getNbCols(Grille grille){ return grille.getData()[0].length; }
@@ -357,4 +358,129 @@ public class UtilitaireGrille {
         }
         return nbAlignes == 5;
     }
+
+
+    //bloc(type,longueur)
+    static int INDEX_TYPE = 0;
+    static int INDEX_LONG = 1;
+    static int BLOC_VIDE = 0;
+    static int BLOC_INEXISTANT = -1;
+    public static int determinerPertinence(ArrayList<ArrayList<int[]>> grille, int joueur){
+        int pertinenceDeLaGrille=0;
+        //pour chaque ligne
+        for(ArrayList<int[]> ligne : grille){
+            //pour chaque bloc
+            for(int i =0; i < ligne.size(); i++){
+                int[] blocCourant = ligne.get(i);
+                int longueur = blocCourant[INDEX_LONG];
+                int nbPionsConcernes = blocCourant[INDEX_LONG];
+                int longueurVideTemp = 0;
+
+                //evaluer la pertinence du bloc dans sa ligne
+                if (blocCourant[INDEX_TYPE] == joueur) {
+                    if (blocCourant[INDEX_LONG] > 5) continue;
+
+                    if (estVideAGauche(ligne,i)){
+                        //Si le bloc suivant est ennemi ou null
+                        if (getTypeBloc(ligne, i-2) == BLOC_INEXISTANT ||
+                                (getTypeBloc(ligne,i-2) != joueur && getTypeBloc(ligne,i-2)!= BLOC_VIDE)){
+                            //Ajouter taille du vide a gauche
+                            longueur+= ligne.get(i-1)[INDEX_LONG];
+                        } else {
+                            //Si le bloc suivant est au joueur
+                            //Ajouter taille du vide a gauche -1
+                            //(Permet d'eviter de faire 6)
+                            longueur+= ligne.get(i-1)[INDEX_LONG] -1;
+                        }
+                    }
+                    if ( estVideADroite(ligne,i)){
+                        //Si le bloc suivant est ennemi ou null
+                        if(getTypeBloc(ligne, i+2) == BLOC_INEXISTANT ||
+                                (getTypeBloc(ligne,i+2) != joueur && getTypeBloc(ligne,i+2)!= BLOC_VIDE)){
+                            //Ajouter temporairement la longueur du vide a droite
+                            longueur+=ligne.get(i+1)[INDEX_LONG];
+                            longueurVideTemp = ligne.get(i+1)[INDEX_LONG];
+                        } else {
+                            //Si le bloc suivant est au joueur
+                            //Ajouteur temporairement la longueur du vide a droite -1
+                            //(Permet d'eviter de faire 6)
+                            longueur += ligne.get(i+1)[INDEX_LONG] -1;
+                            longueurVideTemp = ligne.get(i+1)[INDEX_LONG]-1;
+                        }
+                    }
+                    if(longueur>= 5){
+                        //Analyse du bloc terminee.
+                        //Mettre a jour petinence de la grille
+                        //Passer au bloc suivant
+                        pertinenceDeLaGrille += (int)Math.pow(5,nbPionsConcernes);
+                        continue;
+                    }
+                    //Retirer le vide a droite temporaire
+                    longueur-= longueurVideTemp;
+                    int positionBlocAjouter = i+1;
+                    //Analyser vers la droite puis mettre a jour et passer au bloc suivant
+                    nbPionsConcernes = ajouterADroite(ligne,positionBlocAjouter, longueur, joueur,nbPionsConcernes);
+                    pertinenceDeLaGrille+= (int)Math.pow(5,nbPionsConcernes);
+                }
+
+            }
+        }
+        return pertinenceDeLaGrille;
+    }
+    //Retourne le nouveau nbPionsConcernes
+    public static int ajouterADroite(ArrayList<int[]> ligne, int positionBlocAjouter, int longueur, int joueur, int nbPionsConcernes){
+        while (longueur <5) {
+            //Si plus de bloc disponible.
+            if (positionBlocAjouter>= ligne.size() ||
+                    (getTypeBloc(ligne,positionBlocAjouter) != BLOC_VIDE &&
+                            getTypeBloc(ligne,positionBlocAjouter) != joueur)) return 0;
+            //Si le bloc est vide
+            if (getTypeBloc(ligne,positionBlocAjouter) == BLOC_VIDE){
+                //Si le bloc suivant est null ou enemi
+                if(getTypeBloc(ligne,positionBlocAjouter+1) == BLOC_INEXISTANT ||
+                        (getTypeBloc(ligne,positionBlocAjouter+1)!=joueur &&
+                                getTypeBloc(ligne,positionBlocAjouter+1)!=BLOC_VIDE)){
+                    longueur += ligne.get(positionBlocAjouter)[INDEX_LONG];
+                } else {
+                    //Le cas ou le bloc suivant est au joueur
+                    longueur += ligne.get(positionBlocAjouter)[INDEX_LONG]-1;
+                }
+                //pertinent, on retourne
+                if (longueur >= 5) return nbPionsConcernes;
+            } else {
+                //Si le bloc est ennemi ou nul.
+                //On peut déduire ici que la longueur < 5 et qu'il n'y a plus de possibilités
+                return 0 ;
+            }
+            //On passe au bloc suivant a droite
+            positionBlocAjouter++;
+            //Ce bloc suivant n'est pertinent que s'il est au joueur, car on arrive
+            // d'un bloc vide.
+            if(getTypeBloc(ligne, positionBlocAjouter) == joueur){
+                //+1 pour compenser le -1 dans le bloc vide precedent
+                longueur+= ligne.get(positionBlocAjouter)[INDEX_LONG] + 1;
+                nbPionsConcernes += ligne.get(positionBlocAjouter)[INDEX_LONG];
+                //pertinent
+                if(longueur == 5) return nbPionsConcernes;
+                //non pertinent
+                if( longueur > 5 ) return 0;
+            }
+        }
+        //Ne devrait pas arriver.
+        return 0;
+    }
+    public static int getTypeBloc(ArrayList<int[]> ligne, int positionBloc){
+        if (positionBloc < 0 || positionBloc >= ligne.size()) return BLOC_INEXISTANT;
+        return ligne.get(positionBloc)[INDEX_TYPE];
+    }
+    public static boolean estVideAGauche(ArrayList<int[]> ligne, int positionBlocCourant){
+        if(positionBlocCourant == 0) return false;
+        return ligne.get(positionBlocCourant-1)[INDEX_TYPE] == BLOC_VIDE;
+    }
+
+    public static boolean estVideADroite(ArrayList<int[]> ligne, int positionBlocCourant){
+        if(positionBlocCourant == ligne.size()-1) return false;
+        return ligne.get(positionBlocCourant+1)[INDEX_TYPE] == BLOC_VIDE;
+    }
+
 }

@@ -1,3 +1,4 @@
+
 iterer sur les blocs
   longueur = longueurde notre bloc
   nbPionsConcernés = longueur de notre bloc
@@ -47,3 +48,6 @@ expand_a_droite
     if longueur == 5  return nbPionsConcernes
     if longueur > 5 return 0
     j ++
+
+
+
