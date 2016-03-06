@@ -27,6 +27,8 @@ public class JoueurArtificiel implements Joueur {
     private static long ALMOST_TWO_SECONDS = 1900;
     private static int TIMER_CONTINUE = 0;
     private static int TIMER_STOP = 1;
+    private int MAX_VALUE = 100000000;
+    private int MIN_VALUE = -100000000;
 
     //debug
     private Grille debugGrille;
@@ -52,7 +54,7 @@ public class JoueurArtificiel implements Joueur {
 
         ArrayList<Integer> casesVides = getCasesVides(grille);
         int noJoueur = (grille.getSize() - casesVides.size()) % 2;
-        int[] choix = negaMax(++noJoueur, grille, Integer.MIN_VALUE, Integer.MAX_VALUE, -1, 1);
+        int[] choix = negaMax(noJoueur, grille, MIN_VALUE, MAX_VALUE, -1, 0);
 
         int nbCol = grille.getData()[0].length;
 
@@ -78,8 +80,9 @@ public class JoueurArtificiel implements Joueur {
         //if(System.currentTimeMillis() - DEBUT_TIMER > ALMOST_TWO_SECONDS)
         //    return new int[]{positionCoup, evaluate(grille, noJoueur), TIMER_STOP};
 
-        int finPartie = UtilitaireGrille.finPartie(grille, positionCoup);
-        if(finPartie != 0) return new int[]{positionCoup, (int)(finPartie*Integer.MAX_VALUE/profondeur), TIMER_CONTINUE};
+        if(UtilitaireGrille.finPartie(grille, positionCoup)){
+            return new int[]{positionCoup, MAX_VALUE/profondeur, TIMER_CONTINUE};
+        }
 
         if (profondeur == PROFONDEUR_MAX) return new int[]{positionCoup ,evaluate(grille,noJoueur), TIMER_CONTINUE};
         profondeur++;
@@ -89,11 +92,11 @@ public class JoueurArtificiel implements Joueur {
 
 
         ArrayList<Integer> casesVides = getCasesVides(grille);
-        int[] meilleurCoup = {positionCoup, Integer.MIN_VALUE, TIMER_CONTINUE};
+        int[] meilleurCoup = {positionCoup, MIN_VALUE, TIMER_CONTINUE};
 
         for(int i = 0; i < casesVides.size(); i++){
             Grille grilleProchainCoup = grille.clone();
-            grilleProchainCoup.set(casesVides.get(i) / grille.getData()[0].length, casesVides.get(i) % grille.getData()[0].length, noJoueur);
+            grilleProchainCoup.set(casesVides.get(i) / grille.getData()[0].length, casesVides.get(i) % grille.getData()[0].length, getAdversaire(noJoueur));
 
             int[] coup = negaMax(getAdversaire(noJoueur), grilleProchainCoup, -beta, -alpha, casesVides.get(i), profondeur);
             coup[1] = -coup[1];
