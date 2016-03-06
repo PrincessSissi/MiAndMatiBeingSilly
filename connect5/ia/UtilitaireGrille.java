@@ -1,6 +1,7 @@
 package connect5.ia;
 import connect5.Grille;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.lang.Math;
 
 public class UtilitaireGrille {
@@ -144,7 +145,7 @@ public class UtilitaireGrille {
 
             for(int l = getNbLigs(grille) - 1, c = i; l >= 0 && c < getNbCols(grille); l--, c++){
                 int pionCourant = grille.get(l, c);
-                if(l + 1 != getNbLigs(grille) && c + 1 != getNbCols(grille) && pionCourant != grille.get(l + 1 , c - 1)) noInnerBloc++;
+                if(l + 1 != getNbLigs(grille) && c - 1 != getNbCols(grille) && pionCourant != grille.get(l + 1 , c - 1)) noInnerBloc++;
 
                 if(noInnerBloc >= innerBlocs.size())
                     innerBlocs.add(noInnerBloc, new int[]{pionCourant, 1});
@@ -161,34 +162,32 @@ public class UtilitaireGrille {
         return blocs;
     }
 
-    public static int finPartie(Grille grille, int positionCoup){
-        if (ligneHorizontaleGagnante(grille, positionCoup)
+    public static Boolean finPartie(Grille grille, int positionCoup){
+        if (positionCoup == -1) return false; // Cas limite sur la premiere (fausse) iteration de l'arbre.
+        return (ligneHorizontaleGagnante(grille, positionCoup)
             || ligneVerticaleGagnante(grille, positionCoup)
             || diagonaleDescendantesGagnantes(grille, positionCoup)
-            || diagonaleAscendantesGagnantes(grille, positionCoup)) return 1;
-
-        if (grille.nbLibre() == 0) return 0;
-        return -1;
+            || diagonaleAscendantesGagnantes(grille, positionCoup));
     }
 
-    private static Boolean ligneHorizontaleGagnante(Grille grille, int positionCoup){
+    private static Boolean ligneVerticaleGagnante(Grille grille, int positionCoup){
         int nbCols = getNbCols(grille);
         int nbLigs = getNbLigs(grille);
-        int x = positionCoup / nbCols;
-        int y = positionCoup % nbCols;
-        int noJoueur = grille.get(x, y);
+        int l = positionCoup / nbCols;
+        int c = positionCoup % nbCols;
+        int noJoueur = grille.get(l, c);
         int nbAlignes = 1;
 
-        int xx = x - 1;
+        int ll = l - 1;
 
 
-        // Regarder a gauche
+        // Regarder en haut
         while(true) {
-            if (xx == -1) break;
+            if (ll == -1) break;
 
-            if (grille.get(xx, y) == noJoueur) {
+            if (grille.get(ll, c) == noJoueur) {
                 nbAlignes++;
-                xx--;
+                ll--;
 
                 if(nbAlignes > 5) return false;
                 continue;
@@ -197,15 +196,15 @@ public class UtilitaireGrille {
             break;
         }
 
-        xx = x + 1;
+        ll = l + 1;
 
-        // Regarder a droite
+        // Regarder en bas
         while(true) {
-            if (xx == nbLigs) break;
+            if (ll == nbLigs) break;
 
-            if (grille.get(xx, y) == noJoueur) {
+            if (grille.get(ll, c) == noJoueur) {
                 nbAlignes++;
-                xx++;
+                ll++;
 
                 if(nbAlignes > 5) return false;
                 continue;
@@ -216,24 +215,23 @@ public class UtilitaireGrille {
         return nbAlignes == 5;
     }
 
-    private static Boolean ligneVerticaleGagnante(Grille grille, int positionCoup){
+    private static Boolean ligneHorizontaleGagnante(Grille grille, int positionCoup){
         int nbCols = getNbCols(grille);
-        int nbLigs = getNbLigs(grille);
-        int x = positionCoup / nbCols;
-        int y = positionCoup % nbCols;
-        int noJoueur = grille.get(x, y);
+        int l = positionCoup / nbCols;
+        int c = positionCoup % nbCols;
+        int noJoueur = grille.get(l, c);
         int nbAlignes = 1;
 
-        int yy = y - 1;
+        int cc = c - 1;
 
 
-        // Regarder en haut
+        // Regarder a gauche
         while(true) {
-            if (yy == -1) break;
+            if (cc == -1) break;
 
-            if (grille.get(x, yy) == noJoueur) {
+            if (grille.get(l, cc) == noJoueur) {
                 nbAlignes++;
-                yy--;
+                cc--;
 
                 if(nbAlignes > 5) return false;
                 continue;
@@ -242,15 +240,15 @@ public class UtilitaireGrille {
             break;
         }
 
-        yy = y + 1;
+        cc = c + 1;
 
-        // Regarder en bas
+        // Regarder a droite
         while(true) {
-            if (yy == nbCols) break;
+            if (cc == nbCols) break;
 
-            if (grille.get(x, yy) == noJoueur) {
+            if (grille.get(l, cc) == noJoueur) {
                 nbAlignes++;
-                yy++;
+                cc++;
 
                 if(nbAlignes > 5) return false;
                 continue;
@@ -264,23 +262,23 @@ public class UtilitaireGrille {
     private static Boolean diagonaleDescendantesGagnantes(Grille grille, int positionCoup){
         int nbCols = getNbCols(grille);
         int nbLigs = getNbLigs(grille);
-        int x = positionCoup / nbCols;
-        int y = positionCoup % nbCols;
-        int noJoueur = grille.get(x, y);
+        int l = positionCoup / nbCols;
+        int c = positionCoup % nbCols;
+        int noJoueur = grille.get(l, c);
         int nbAlignes = 1;
 
-        int xx = x - 1;
-        int yy = y - 1;
+        int ll = l - 1;
+        int cc = c - 1;
 
 
         // Regarder en haut et a gauche
         while(true) {
-            if (xx == -1 || yy == -1) break;
+            if (ll == -1 || cc == -1) break;
 
-            if (grille.get(xx, yy) == noJoueur) {
+            if (grille.get(ll, cc) == noJoueur) {
                 nbAlignes++;
-                xx--;
-                yy--;
+                ll--;
+                cc--;
 
                 if(nbAlignes > 5) return false;
                 continue;
@@ -289,17 +287,17 @@ public class UtilitaireGrille {
             break;
         }
 
-        xx = x + 1;
-        yy = y + 1;
+        ll = l + 1;
+        cc = l + 1;
 
         // Regarder en bas et a droite
         while(true) {
-            if (xx == nbLigs || yy == nbCols) break;
+            if (ll == nbLigs || cc == nbCols) break;
 
-            if (grille.get(xx, yy) == noJoueur) {
+            if (grille.get(ll, cc) == noJoueur) {
                 nbAlignes++;
-                xx++;
-                yy++;
+                ll++;
+                cc++;
 
                 if(nbAlignes > 5) return false;
                 continue;
@@ -313,23 +311,23 @@ public class UtilitaireGrille {
     private static Boolean diagonaleAscendantesGagnantes(Grille grille, int positionCoup){
         int nbCols = getNbCols(grille);
         int nbLigs = getNbLigs(grille);
-        int x = positionCoup / nbCols;
-        int y = positionCoup % nbCols;
-        int noJoueur = grille.get(x, y);
+        int l = positionCoup / nbCols;
+        int c = positionCoup % nbCols;
+        int noJoueur = grille.get(l, c);
         int nbAlignes = 1;
 
-        int xx = x + 1;
-        int yy = y - 1;
+        int ll = l + 1;
+        int cc = c - 1;
 
 
-        // Regarder en haut et a gauche
+        // Regarder en bas et a gauche
         while(true) {
-            if (xx == nbLigs || yy == -1) break;
+            if (ll == nbLigs || cc == -1) break;
 
-            if (grille.get(xx, yy) == noJoueur) {
+            if (grille.get(ll, cc) == noJoueur) {
                 nbAlignes++;
-                xx++;
-                yy--;
+                ll++;
+                cc--;
 
                 if(nbAlignes > 5) return false;
                 continue;
@@ -338,17 +336,17 @@ public class UtilitaireGrille {
             break;
         }
 
-        xx = x - 1;
-        yy = y + 1;
+        ll = l - 1;
+        cc = c + 1;
 
         // Regarder en bas et a droite
         while(true) {
-            if (xx == -1 || yy == nbCols) break;
+            if (ll == -1 || cc == nbCols) break;
 
-            if (grille.get(xx, yy) == noJoueur) {
+            if (grille.get(ll, cc) == noJoueur) {
                 nbAlignes++;
-                xx--;
-                yy++;
+                ll--;
+                cc++;
 
                 if(nbAlignes > 5) return false;
                 continue;
@@ -367,8 +365,13 @@ public class UtilitaireGrille {
     static int BLOC_INEXISTANT = -1;
     public static int determinerPertinence(ArrayList<ArrayList<int[]>> grille, int joueur){
         int pertinenceDeLaGrille=0;
+        int POIDS_PERTINENCE = 5;
         //pour chaque ligne
-        for(ArrayList<int[]> ligne : grille){
+
+        Iterator<ArrayList<int[]>> it = grille.iterator();
+        while(it.hasNext()) {
+            ArrayList<int[]> ligne = it.next();
+
             //pour chaque bloc
             for(int i =0; i < ligne.size(); i++){
                 int[] blocCourant = ligne.get(i);
@@ -396,7 +399,7 @@ public class UtilitaireGrille {
                     if ( estVideADroite(ligne,i)){
                         //Si le bloc suivant est ennemi ou null
                         if(getTypeBloc(ligne, i+2) == BLOC_INEXISTANT ||
-                                (getTypeBloc(ligne,i+2) != joueur && getTypeBloc(ligne,i+2)!= BLOC_VIDE)){
+                                (getTypeBloc(ligne,i+2) != joueur && getTypeBloc(ligne,i+2) != BLOC_VIDE)){
                             //Ajouter temporairement la longueur du vide a droite
                             longueur+=ligne.get(i+1)[INDEX_LONG];
                             longueurVideTemp = ligne.get(i+1)[INDEX_LONG];
@@ -412,7 +415,7 @@ public class UtilitaireGrille {
                         //Analyse du bloc terminee.
                         //Mettre a jour petinence de la grille
                         //Passer au bloc suivant
-                        pertinenceDeLaGrille += (int)Math.pow(5,nbPionsConcernes);
+                        pertinenceDeLaGrille += (int)Math.pow(POIDS_PERTINENCE,nbPionsConcernes);
                         continue;
                     }
                     //Retirer le vide a droite temporaire
@@ -420,9 +423,10 @@ public class UtilitaireGrille {
                     int positionBlocAjouter = i+1;
                     //Analyser vers la droite puis mettre a jour et passer au bloc suivant
                     nbPionsConcernes = ajouterADroite(ligne,positionBlocAjouter, longueur, joueur,nbPionsConcernes);
-                    pertinenceDeLaGrille+= (int)Math.pow(5,nbPionsConcernes);
+                    if( nbPionsConcernes > 0) {
+                        pertinenceDeLaGrille += (int) Math.pow(POIDS_PERTINENCE, nbPionsConcernes);
+                    }
                 }
-
             }
         }
         return pertinenceDeLaGrille;
@@ -449,7 +453,7 @@ public class UtilitaireGrille {
                 if (longueur >= 5) return nbPionsConcernes;
             } else {
                 //Si le bloc est ennemi ou nul.
-                //On peut déduire ici que la longueur < 5 et qu'il n'y a plus de possibilités
+                //On peut dï¿½duire ici que la longueur < 5 et qu'il n'y a plus de possibilitï¿½s
                 return 0 ;
             }
             //On passe au bloc suivant a droite
@@ -464,6 +468,8 @@ public class UtilitaireGrille {
                 if(longueur == 5) return nbPionsConcernes;
                 //non pertinent
                 if( longueur > 5 ) return 0;
+
+                positionBlocAjouter++;
             }
         }
         //Ne devrait pas arriver.
