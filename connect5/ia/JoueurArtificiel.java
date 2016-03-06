@@ -81,7 +81,7 @@ public class JoueurArtificiel implements Joueur {
         //    return new int[]{positionCoup, evaluate(grille, noJoueur), TIMER_STOP};
 
         if(UtilitaireGrille.finPartie(grille, positionCoup)){
-            return new int[]{positionCoup, MAX_VALUE/profondeur, TIMER_CONTINUE};
+            return new int[]{positionCoup, MIN_VALUE/profondeur, TIMER_CONTINUE};
         }
 
         if (profondeur == PROFONDEUR_MAX) return new int[]{positionCoup ,evaluate(grille,noJoueur), TIMER_CONTINUE};
