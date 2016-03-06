@@ -49,11 +49,9 @@ public class JoueurArtificiel implements Joueur {
 
         DEBUT_TIMER = System.currentTimeMillis();
         this.debugGrille = grille.clone();
-        // Cas limite : passer la première case vide.
-        // Donc éventuellement élaguer les cases pertinentes d'être évaluées en premier.
+
         ArrayList<Integer> casesVides = getCasesVides(grille);
         int noJoueur = (grille.getSize() - casesVides.size()) % 2;
-        //grille.set(casesVides.get(0) / grille.getData()[0].length, casesVides.get(0) % grille.getData()[0].length, noJoueur);
         int[] choix = negaMax(++noJoueur, grille, Integer.MIN_VALUE, Integer.MAX_VALUE, -1, 1);
 
         int nbCol = grille.getData()[0].length;
@@ -81,7 +79,7 @@ public class JoueurArtificiel implements Joueur {
         //    return new int[]{positionCoup, evaluate(grille, noJoueur), TIMER_STOP};
 
         int finPartie = UtilitaireGrille.finPartie(grille, positionCoup);
-        if(finPartie != 0) return new int[]{positionCoup, (int)finPartie*Integer.MAX_VALUE/profondeur, TIMER_CONTINUE};
+        if(finPartie != 0) return new int[]{positionCoup, (int)(finPartie*Integer.MAX_VALUE/profondeur), TIMER_CONTINUE};
 
         if (profondeur == PROFONDEUR_MAX) return new int[]{positionCoup ,evaluate(grille,noJoueur), TIMER_CONTINUE};
         profondeur++;
@@ -89,8 +87,7 @@ public class JoueurArtificiel implements Joueur {
         System.out.println("Count: " + COUNT++);
         System.out.println("l : " + positionCoup / grille.getData()[0].length + "c : " + positionCoup % grille.getData()[0].length);
 
-        // J'ai gardé le arraylist du prof, pour éventuellement faire un élagage des noeuds à visiter.
-        // Pour l'instant je met toutes les cases vides.
+
         ArrayList<Integer> casesVides = getCasesVides(grille);
         int[] meilleurCoup = {positionCoup, Integer.MIN_VALUE, TIMER_CONTINUE};
 
