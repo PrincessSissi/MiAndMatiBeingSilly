@@ -1,6 +1,7 @@
 package connect5.ia;
 import connect5.Grille;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.lang.Math;
 
 public class UtilitaireGrille {
@@ -144,7 +145,7 @@ public class UtilitaireGrille {
 
             for(int l = getNbLigs(grille) - 1, c = i; l >= 0 && c < getNbCols(grille); l--, c++){
                 int pionCourant = grille.get(l, c);
-                if(l + 1 != getNbLigs(grille) && c + 1 != getNbCols(grille) && pionCourant != grille.get(l + 1 , c - 1)) noInnerBloc++;
+                if(l + 1 != getNbLigs(grille) && c - 1 != getNbCols(grille) && pionCourant != grille.get(l + 1 , c - 1)) noInnerBloc++;
 
                 if(noInnerBloc >= innerBlocs.size())
                     innerBlocs.add(noInnerBloc, new int[]{pionCourant, 1});
@@ -366,7 +367,11 @@ public class UtilitaireGrille {
         int pertinenceDeLaGrille=0;
         int POIDS_PERTINENCE = 5;
         //pour chaque ligne
-        for(ArrayList<int[]> ligne : grille){
+
+        Iterator<ArrayList<int[]>> it = grille.iterator();
+        while(it.hasNext()) {
+            ArrayList<int[]> ligne = it.next();
+
             //pour chaque bloc
             for(int i =0; i < ligne.size(); i++){
                 int[] blocCourant = ligne.get(i);
@@ -394,7 +399,7 @@ public class UtilitaireGrille {
                     if ( estVideADroite(ligne,i)){
                         //Si le bloc suivant est ennemi ou null
                         if(getTypeBloc(ligne, i+2) == BLOC_INEXISTANT ||
-                                (getTypeBloc(ligne,i+2) != joueur && getTypeBloc(ligne,i+2)!= BLOC_VIDE)){
+                                (getTypeBloc(ligne,i+2) != joueur && getTypeBloc(ligne,i+2) != BLOC_VIDE)){
                             //Ajouter temporairement la longueur du vide a droite
                             longueur+=ligne.get(i+1)[INDEX_LONG];
                             longueurVideTemp = ligne.get(i+1)[INDEX_LONG];
@@ -422,7 +427,6 @@ public class UtilitaireGrille {
                         pertinenceDeLaGrille += (int) Math.pow(POIDS_PERTINENCE, nbPionsConcernes);
                     }
                 }
-
             }
         }
         return pertinenceDeLaGrille;
@@ -464,8 +468,9 @@ public class UtilitaireGrille {
                 if(longueur == 5) return nbPionsConcernes;
                 //non pertinent
                 if( longueur > 5 ) return 0;
+
+                positionBlocAjouter++;
             }
-            positionBlocAjouter++;
         }
         //Ne devrait pas arriver.
         return 0;

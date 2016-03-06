@@ -125,13 +125,23 @@ public class JoueurArtificiel implements Joueur {
     private int evaluate(Grille grille, int noJoueur){
         ArrayList<ArrayList<int[]>> blocsVerticaux = UtilitaireGrille.construireBlocsVerticaux(grille);
         ArrayList<ArrayList<int[]>> blocsHorizontaux = UtilitaireGrille.construireBlocsHorizontaux(grille);
-        //ArrayList<ArrayList<int[]>> blocsDiagonauxDescedants = UtilitaireGrille.construireBlocsDiagonauxDescendants(grille);
-        //ArrayList<ArrayList<int[]>> blocsDiagonauxAscendants = UtilitaireGrille.construireBlocsDiagonauxAscendants(grille);
-        int pertinence = UtilitaireGrille.determinerPertinence(blocsVerticaux,noJoueur);
-        int pertinenceh = UtilitaireGrille.determinerPertinence(blocsHorizontaux,noJoueur);
-        int pertinenceAdv = UtilitaireGrille.determinerPertinence(blocsVerticaux,getAdversaire(noJoueur));
-        int pertinenceAdvh = UtilitaireGrille.determinerPertinence(blocsHorizontaux,getAdversaire(noJoueur));
-        return pertinence+pertinenceh-(pertinenceAdv+pertinenceAdvh);
+        ArrayList<ArrayList<int[]>> blocsDiagonauxDescedants = UtilitaireGrille.construireBlocsDiagonauxDescendants(grille);
+        ArrayList<ArrayList<int[]>> blocsDiagonauxAscendants = UtilitaireGrille.construireBlocsDiagonauxAscendants(grille);
+
+        int pertinenceV = UtilitaireGrille.determinerPertinence(blocsVerticaux, noJoueur);
+        int pertinenceAdvV = UtilitaireGrille.determinerPertinence(blocsVerticaux,getAdversaire(noJoueur));
+
+        int pertinenceH = UtilitaireGrille.determinerPertinence(blocsHorizontaux, noJoueur);
+        int pertinenceAdvH = UtilitaireGrille.determinerPertinence(blocsHorizontaux,getAdversaire(noJoueur));
+
+        int pertinenceDD = UtilitaireGrille.determinerPertinence(blocsDiagonauxDescedants,noJoueur);
+        int pertinenceDDAdv = UtilitaireGrille.determinerPertinence(blocsDiagonauxDescedants,getAdversaire(noJoueur));
+
+        int pertinenceDA = UtilitaireGrille.determinerPertinence(blocsDiagonauxAscendants,noJoueur);
+        int pertinenceDAAdv = UtilitaireGrille.determinerPertinence(blocsDiagonauxAscendants,getAdversaire(noJoueur));
+
+        return pertinenceV + pertinenceH + pertinenceDD + pertinenceDA
+            - (pertinenceAdvV + pertinenceAdvH + pertinenceDDAdv + pertinenceDAAdv);
     }
 
     //prof
