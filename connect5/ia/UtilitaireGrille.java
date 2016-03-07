@@ -9,7 +9,7 @@ public class UtilitaireGrille {
     public static int getNbCols(Grille grille){ return grille.getData()[0].length; }
     public static int getNbLigs(Grille grille){ return grille.getData().length; }
 
-    public static ArrayList<Integer> getCasesVidesRadius2(Grille grille){
+    public static TreeSet<Integer> getCasesVidesRadius2(Grille grille){
         int nbCols = getNbCols(grille);
         int nbLigs = getNbLigs(grille);
         TreeSet<Integer> casesVides = new TreeSet<Integer>();
@@ -37,7 +37,7 @@ public class UtilitaireGrille {
             }
         }
 
-        return new ArrayList(casesVides);
+        return casesVides;
     }
 
     public static ArrayList<ArrayList<int[]>> construireBlocsHorizontaux(Grille grille) {

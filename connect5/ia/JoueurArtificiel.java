@@ -1,4 +1,5 @@
 package connect5.ia;
+import apple.laf.JRSUIUtils;
 import connect5.ia.UtilitaireGrille;
 
 /*
@@ -13,8 +14,8 @@ import connect5.ia.UtilitaireGrille;
 import connect5.Grille;
 import connect5.Joueur;
 import connect5.Position;
-import java.util.ArrayList;
-import java.util.Random;
+
+import java.util.*;
 
 public class JoueurArtificiel implements Joueur {
 
@@ -77,8 +78,8 @@ public class JoueurArtificiel implements Joueur {
     // Je retourne le format [numeroCase , valeur, flag_du_timer] pour éventuellement garder une trace des noeuds
     // afin de pouvoir retourner une valeur pertinente en temps réel.
     private int[] negaMax(int noJoueur, Grille grille, int alpha, int beta, int positionCoup, int profondeur){
-        //if(System.currentTimeMillis() - DEBUT_TIMER > ALMOST_TWO_SECONDS)
-        //    return new int[]{positionCoup, evaluate(grille, noJoueur), TIMER_STOP};
+        if(System.currentTimeMillis() - DEBUT_TIMER > ALMOST_TWO_SECONDS)
+            return new int[]{positionCoup, evaluate(grille, noJoueur), TIMER_STOP};
 
         if(UtilitaireGrille.finPartie(grille, positionCoup)){
             return new int[]{positionCoup, MIN_VALUE/profondeur, TIMER_CONTINUE};
@@ -91,25 +92,29 @@ public class JoueurArtificiel implements Joueur {
         System.out.println("l : " + positionCoup / grille.getData()[0].length + "c : " + positionCoup % grille.getData()[0].length);
 
 
-        ArrayList<Integer> casesVides = getCasesVides(grille);
+        TreeSet<int[]> casesVides = getOrderedCasesVides(grille, noJoueur);
+        Iterator<int[]> it_casesVides = casesVides.iterator();
         int[] meilleurCoup = {positionCoup, MIN_VALUE, TIMER_CONTINUE};
 
-        for(int i = 0; i < casesVides.size(); i++){
-            Grille grilleProchainCoup = grille.clone();
-            grilleProchainCoup.set(casesVides.get(i) / grille.getData()[0].length, casesVides.get(i) % grille.getData()[0].length, getAdversaire(noJoueur));
 
-            int[] coup = negaMax(getAdversaire(noJoueur), grilleProchainCoup, -beta, -alpha, casesVides.get(i), profondeur);
+        while(it_casesVides.hasNext()){
+            int caseVide = it_casesVides.next()[0];
+
+            Grille grilleProchainCoup = grille.clone();
+            grilleProchainCoup.set(caseVide / grille.getData()[0].length, caseVide % grille.getData()[0].length, getAdversaire(noJoueur));
+
+            int[] coup = negaMax(getAdversaire(noJoueur), grilleProchainCoup, -beta, -alpha, caseVide, profondeur);
             coup[1] = -coup[1];
 
-            //if (coup[2] == TIMER_STOP) {
-            //    coup[0] = casesVides.get(i);
-            //    meilleurCoup[2] = TIMER_STOP;
+            if (coup[2] == TIMER_STOP) {
+                coup[0] = caseVide;
+                meilleurCoup[2] = TIMER_STOP;
 
-            //    return (meilleurCoup[1] > coup[1] ? meilleurCoup : coup);
-            //}
+                return (meilleurCoup[1] > coup[1] ? meilleurCoup : coup);
+            }
 
             if(coup[1] > meilleurCoup[1]) {
-                meilleurCoup = new int[]{casesVides.get(i), coup[1], TIMER_CONTINUE};
+                meilleurCoup = new int[]{caseVide, coup[1], TIMER_CONTINUE};
 
                 if(meilleurCoup[1] > alpha) {
                     alpha = meilleurCoup[1];
@@ -122,32 +127,36 @@ public class JoueurArtificiel implements Joueur {
         return meilleurCoup;
     }
 
-    private ArrayList<Integer> getOrderedCasesVides(Grille grille, int noJoueur) {
-        ArrayList<Integer> casesVides = UtilitaireGrille.getCasesVidesRadius2(grille);
+    private TreeSet<int[]> getOrderedCasesVides(Grille grille, int noJoueur) {
+        TreeSet<Integer> casesVides = UtilitaireGrille.getCasesVidesRadius2(grille);
+        Iterator<Integer> it_casesVides = casesVides.iterator();
 
         int[][] evaluations = new int[casesVides.size()][2];
-        for (int i = 0; i < casesVides.size(); i++) {
+
+        int i = 0;
+        while(it_casesVides.hasNext()){
+
             Grille grilleTmp = grille.clone();
-            int caseVide = casesVides.get(i);
+            int caseVide = it_casesVides.next();
 
             grilleTmp.set(caseVide / grille.getData()[0].length, caseVide % grille.getData()[0].length, noJoueur);
             evaluations[i][0] = caseVide;
             evaluations[i][1] = Math.abs(evaluate(grilleTmp, noJoueur));
+
+            i++;
         }
 
-        ArrayList<int[]> orderedEvaluations = new ArrayList<int[]>();
-        orderedEvaluations.add(evaluations[0]);
-        for (int i = 1; i < evaluations.length; i++) {
+        TreeSet<int[]> orderedCasesVides = new TreeSet<int[]>(new Comparator<int[]>() {
+            @Override
+            public int compare(int[] o1, int[] o2) {
+                return o2[1] - o1[1];
+            }
+        });
 
-            int j  = 0;
-            while(j < orderedEvaluations.size() && evaluations[i][1] < orderedEvaluations.get(j)[1]){ j++; }
-            orderedEvaluations.add(j, evaluations[i]);
+        for (i = 0; i < evaluations.length; i++){
+            orderedCasesVides.add(evaluations[i]);
         }
 
-        ArrayList<Integer> orderedCasesVides = new ArrayList<Integer>();
-        for (int i = 0; i < casesVides.size(); i++){
-            orderedCasesVides.add(i, orderedEvaluations.get(i)[0]);
-        }
         return orderedCasesVides;
     }
 
@@ -158,16 +167,16 @@ public class JoueurArtificiel implements Joueur {
         ArrayList<ArrayList<int[]>> blocsDiagonauxAscendants = UtilitaireGrille.construireBlocsDiagonauxAscendants(grille);
 
         int pertinenceV = UtilitaireGrille.determinerPertinence(blocsVerticaux, noJoueur);
-        int pertinenceAdvV = UtilitaireGrille.determinerPertinence(blocsVerticaux,getAdversaire(noJoueur));
+        int pertinenceAdvV = UtilitaireGrille.determinerPertinence(blocsVerticaux,getAdversaire(noJoueur)) - 1;
 
         int pertinenceH = UtilitaireGrille.determinerPertinence(blocsHorizontaux, noJoueur);
-        int pertinenceAdvH = UtilitaireGrille.determinerPertinence(blocsHorizontaux,getAdversaire(noJoueur));
+        int pertinenceAdvH = UtilitaireGrille.determinerPertinence(blocsHorizontaux,getAdversaire(noJoueur)) - 1;
 
         int pertinenceDD = UtilitaireGrille.determinerPertinence(blocsDiagonauxDescedants,noJoueur);
-        int pertinenceDDAdv = UtilitaireGrille.determinerPertinence(blocsDiagonauxDescedants,getAdversaire(noJoueur));
+        int pertinenceDDAdv = UtilitaireGrille.determinerPertinence(blocsDiagonauxDescedants,getAdversaire(noJoueur)) - 1;
 
         int pertinenceDA = UtilitaireGrille.determinerPertinence(blocsDiagonauxAscendants,noJoueur);
-        int pertinenceDAAdv = UtilitaireGrille.determinerPertinence(blocsDiagonauxAscendants,getAdversaire(noJoueur));
+        int pertinenceDAAdv = UtilitaireGrille.determinerPertinence(blocsDiagonauxAscendants,getAdversaire(noJoueur)) - 1;
 
         return pertinenceV + pertinenceH + pertinenceDD + pertinenceDA
             - (pertinenceAdvV + pertinenceAdvH + pertinenceDDAdv + pertinenceDAAdv);
