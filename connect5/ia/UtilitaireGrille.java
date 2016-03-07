@@ -288,7 +288,7 @@ public class UtilitaireGrille {
         }
 
         ll = l + 1;
-        cc = l + 1;
+        cc = c + 1;
 
         // Regarder en bas et a droite
         while(true) {
