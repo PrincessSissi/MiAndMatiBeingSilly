@@ -54,7 +54,7 @@ public class JoueurArtificiel implements Joueur {
 
         ArrayList<Integer> casesVides = getCasesVides(grille);
         int noJoueur = (grille.getSize() - casesVides.size()) % 2;
-        int[] choix = negaMax(noJoueur, grille, MIN_VALUE, MAX_VALUE, -1, 0);
+        int[] choix = negaMax(getAdversaire(++noJoueur), grille, MIN_VALUE, MAX_VALUE, -1, 0);
 
         int nbCol = grille.getData()[0].length;
 
@@ -120,6 +120,35 @@ public class JoueurArtificiel implements Joueur {
         }
 
         return meilleurCoup;
+    }
+
+    private ArrayList<Integer> getOrderedCasesVides(Grille grille, int noJoueur) {
+        ArrayList<Integer> casesVides = UtilitaireGrille.getCasesVidesRadius2(grille);
+
+        int[][] evaluations = new int[casesVides.size()][2];
+        for (int i = 0; i < casesVides.size(); i++) {
+            Grille grilleTmp = grille.clone();
+            int caseVide = casesVides.get(i);
+
+            grilleTmp.set(caseVide / grille.getData()[0].length, caseVide % grille.getData()[0].length, noJoueur);
+            evaluations[i][0] = caseVide;
+            evaluations[i][1] = Math.abs(evaluate(grilleTmp, noJoueur));
+        }
+
+        ArrayList<int[]> orderedEvaluations = new ArrayList<int[]>();
+        orderedEvaluations.add(evaluations[0]);
+        for (int i = 1; i < evaluations.length; i++) {
+
+            int j  = 0;
+            while(j < orderedEvaluations.size() && evaluations[i][1] < orderedEvaluations.get(j)[1]){ j++; }
+            orderedEvaluations.add(j, evaluations[i]);
+        }
+
+        ArrayList<Integer> orderedCasesVides = new ArrayList<Integer>();
+        for (int i = 0; i < casesVides.size(); i++){
+            orderedCasesVides.add(i, orderedEvaluations.get(i)[0]);
+        }
+        return orderedCasesVides;
     }
 
     private int evaluate(Grille grille, int noJoueur){

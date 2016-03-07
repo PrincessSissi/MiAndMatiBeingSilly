@@ -3,10 +3,42 @@ import connect5.Grille;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.lang.Math;
+import java.util.TreeSet;
 
 public class UtilitaireGrille {
     public static int getNbCols(Grille grille){ return grille.getData()[0].length; }
     public static int getNbLigs(Grille grille){ return grille.getData().length; }
+
+    public static ArrayList<Integer> getCasesVidesRadius2(Grille grille){
+        int nbCols = getNbCols(grille);
+        int nbLigs = getNbLigs(grille);
+        TreeSet<Integer> casesVides = new TreeSet<Integer>();
+
+        for (int l = 0; l < nbLigs; l++) {
+            for (int c = 0; c < nbCols; c++) {
+                int pion = grille.get(l, c);
+                if(pion != 0) {
+
+                    for (int i = -2; i <= 2; i++) {
+                        int lpp = l + i;
+
+                        for (int j = -2; j <= 2; j++) {
+                            int cpp = c + j;
+
+                            if(lpp > -1 &&  lpp < nbLigs
+                                && cpp > -1 && cpp < nbCols
+                                && grille.get(lpp, cpp) == 0){
+
+                                casesVides.add((lpp) * nbCols + (cpp));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return new ArrayList(casesVides);
+    }
 
     public static ArrayList<ArrayList<int[]>> construireBlocsHorizontaux(Grille grille) {
         ArrayList<ArrayList<int[]>> blocs = new ArrayList<ArrayList<int[]>>();
