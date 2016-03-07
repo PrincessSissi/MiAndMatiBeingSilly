@@ -1,5 +1,4 @@
 package connect5.ia;
-import apple.laf.JRSUIUtils;
 import connect5.ia.UtilitaireGrille;
 
 /*
