@@ -42,15 +42,18 @@ public class UtilitaireGrille {
 
     public static ArrayList<ArrayList<int[]>> construireBlocsHorizontaux(Grille grille) {
         ArrayList<ArrayList<int[]>> blocs = new ArrayList<ArrayList<int[]>>();
+        int nbCols = getNbCols(grille);
+        if (nbCols < 5) return blocs;
 
+        int nbLigs = getNbLigs(grille);
         int noBloc = 0;
 
-        for (int i = 0; i < getNbLigs(grille); i++) {
+        for (int i = 0; i < nbLigs; i++) {
 
             ArrayList<int[]> innerBlocs = new ArrayList<int[]>();
             int noInnerBloc = 0;
 
-            for (int j = 0; j < getNbCols(grille); j++) {
+            for (int j = 0; j < nbCols; j++) {
                 int pionCourant = grille.get(i,j);
                 if(j - 1 != -1 && pionCourant != grille.get(i , j - 1)) noInnerBloc++;
 
@@ -71,15 +74,18 @@ public class UtilitaireGrille {
 
     public static ArrayList<ArrayList<int[]>> construireBlocsVerticaux(Grille grille) {
         ArrayList<ArrayList<int[]>> blocs = new ArrayList<ArrayList<int[]>>();
+        int nbLigs = getNbLigs(grille);
+        if(nbLigs < 5) return blocs;
 
+        int nbCols = getNbCols(grille);
         int noBloc = 0;
 
-        for (int i = 0; i < getNbCols(grille); i++) {
+        for (int i = 0; i < nbCols; i++) {
 
             ArrayList<int[]> innerBlocs = new ArrayList<int[]>();
             int noInnerBloc = 0;
 
-            for (int j = 0; j < getNbLigs(grille); j++) {
+            for (int j = 0; j < nbLigs; j++) {
                 int pionCourant = grille.get(j,i);
                 if(j - 1 != -1 && pionCourant != grille.get(j - 1 , i)) noInnerBloc++;
 
@@ -100,10 +106,13 @@ public class UtilitaireGrille {
 
     public static ArrayList<ArrayList<int[]>> construireBlocsDiagonauxDescendants(Grille grille) {
         ArrayList<ArrayList<int[]>> blocs = new ArrayList<ArrayList<int[]>>();
+        int nbLigs = getNbLigs(grille);
+        int nbCols = getNbCols(grille);
+        if(nbLigs < 5 || nbCols < 5) return blocs;
 
         int noBloc = 0;
 
-        for (int i = 0; i < getNbLigs(grille); i++) {
+        for (int i = 0; i < getNbLigs(grille) - 4; i++) {
             ArrayList<int[]> innerBlocs = new ArrayList<int[]>();
             int noInnerBloc = 0;
 
@@ -123,7 +132,7 @@ public class UtilitaireGrille {
             blocs.add(noBloc++, innerBlocs);
         }
 
-        for (int i = 1; i < getNbCols(grille); i++) {
+        for (int i = 1; i < getNbCols(grille) - 4; i++) {
             ArrayList<int[]> innerBlocs = new ArrayList<int[]>();
             int noInnerBloc = 0;
 
@@ -148,10 +157,13 @@ public class UtilitaireGrille {
 
     public static ArrayList<ArrayList<int[]>> construireBlocsDiagonauxAscendants(Grille grille) {
         ArrayList<ArrayList<int[]>> blocs = new ArrayList<ArrayList<int[]>>();
+        int nbLigs = getNbLigs(grille);
+        int nbCols = getNbCols(grille);
+        if(nbLigs < 5 || nbCols < 5) return blocs;
 
         int noBloc = 0;
 
-        for (int i = 0; i < getNbLigs(grille); i++) {
+        for (int i = 4; i < getNbLigs(grille); i++) {
             ArrayList<int[]> innerBlocs = new ArrayList<int[]>();
             int noInnerBloc = 0;
 
@@ -171,7 +183,7 @@ public class UtilitaireGrille {
             blocs.add(noBloc++, innerBlocs);
         }
 
-        for (int i = 1; i < getNbCols(grille); i++) {
+        for (int i = 1; i < getNbCols(grille) - 4; i++) {
             ArrayList<int[]> innerBlocs = new ArrayList<int[]>();
             int noInnerBloc = 0;
 
