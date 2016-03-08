@@ -77,8 +77,11 @@ public class JoueurArtificiel implements Joueur {
     // Je retourne le format [numeroCase , valeur, flag_du_timer] pour éventuellement garder une trace des noeuds
     // afin de pouvoir retourner une valeur pertinente en temps réel.
     private int[] negaMax(int noJoueur, Grille grille, int alpha, int beta, int positionCoup, int profondeur){
-        if(System.currentTimeMillis() - DEBUT_TIMER > ALMOST_TWO_SECONDS)
+        if(System.currentTimeMillis() - DEBUT_TIMER > ALMOST_TWO_SECONDS) {
+            //DEBUG
+            System.out.println("TIMEOUT profondeur: " + profondeur);
             return new int[]{positionCoup, evaluate(grille, noJoueur), TIMER_STOP};
+        }
 
         if(UtilitaireGrille.finPartie(grille, positionCoup)){
             return new int[]{positionCoup, MIN_VALUE/profondeur, TIMER_CONTINUE};
@@ -87,8 +90,8 @@ public class JoueurArtificiel implements Joueur {
         if (profondeur == PROFONDEUR_MAX) return new int[]{positionCoup ,evaluate(grille,noJoueur), TIMER_CONTINUE};
         profondeur++;
         //DEBUG
-        System.out.println("Count: " + COUNT++);
-        System.out.println("l : " + positionCoup / grille.getData()[0].length + "c : " + positionCoup % grille.getData()[0].length);
+        //System.out.println("Count: " + COUNT++);
+        //System.out.println("l : " + positionCoup / grille.getData()[0].length + "c : " + positionCoup % grille.getData()[0].length);
 
 
         TreeSet<int[]> casesVides = getOrderedCasesVides(grille, noJoueur);

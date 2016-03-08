@@ -408,7 +408,7 @@ public class UtilitaireGrille {
     static int BLOC_VIDE = 0;
     static int BLOC_INEXISTANT = -1;
     public static int determinerPertinence(ArrayList<ArrayList<int[]>> grille, int joueur){
-        int pertinenceDeLaGrille=0;
+        int totalPionsPertinents=0;
         int POIDS_PERTINENCE = 5;
         //pour chaque ligne
 
@@ -459,7 +459,8 @@ public class UtilitaireGrille {
                         //Analyse du bloc terminee.
                         //Mettre a jour petinence de la grille
                         //Passer au bloc suivant
-                        pertinenceDeLaGrille += (int)Math.pow(POIDS_PERTINENCE,nbPionsConcernes);
+                        if(nbPionsConcernes == 4 && estUnCasOptimal(ligne, i)) nbPionsConcernes++;
+                        totalPionsPertinents += nbPionsConcernes;
                         continue;
                     }
                     //Retirer le vide a droite temporaire
@@ -468,12 +469,13 @@ public class UtilitaireGrille {
                     //Analyser vers la droite puis mettre a jour et passer au bloc suivant
                     nbPionsConcernes = ajouterADroite(ligne,positionBlocAjouter, longueur, joueur,nbPionsConcernes);
                     if( nbPionsConcernes > 0) {
-                        pertinenceDeLaGrille += (int) Math.pow(POIDS_PERTINENCE, nbPionsConcernes);
+                        if(nbPionsConcernes == 4 && estUnCasOptimal(ligne, i)) nbPionsConcernes++;
+                        totalPionsPertinents += nbPionsConcernes;
                     }
                 }
             }
         }
-        return pertinenceDeLaGrille;
+        return (int) Math.pow(POIDS_PERTINENCE, totalPionsPertinents);
     }
     //Retourne le nouveau nbPionsConcernes
     public static int ajouterADroite(ArrayList<int[]> ligne, int positionBlocAjouter, int longueur, int joueur, int nbPionsConcernes){
@@ -531,6 +533,33 @@ public class UtilitaireGrille {
     public static boolean estVideADroite(ArrayList<int[]> ligne, int positionBlocCourant){
         if(positionBlocCourant == ligne.size()-1) return false;
         return ligne.get(positionBlocCourant+1)[INDEX_TYPE] == BLOC_VIDE;
+    }
+
+    public static boolean estUnCasOptimal(ArrayList<int[]> ligne, int positionBlocCourant){
+        /**
+         * compteur = 0
+         * iterer a gauche
+         *      si une case vide
+         *          garder en memoire la case vide 2
+         *          break;
+     *          compteur++
+ *          iterer a droite
+         *      si une case vide
+         *          garder ne memoire la case vide 2
+         *          break;
+     *          compteur++
+         *
+ *          si compteur != 4
+ *              retourner false
+ *
+ *          si la case a gauche de la case vide 1 est a nous
+     *          return false
+ *          si la case a droite de la casevide 2 est a nous
+     *          return false
+ *
+ *          return true
+         */
+        return false;
     }
 
 }
