@@ -472,58 +472,70 @@ public class UtilitaireGrille {
                     //Mettre a jour petinence de la grille
                     //Passer au bloc suivant
                     valeurTotale += getValeurPertinenceBloc(nbPionsConcernes);
-                    continue;
                 }
-                //Retirer le vide a droite temporaire
-                longueur-= longueurVideTemp;
+
+
                 int positionBlocAjouter = i+1;
                 //Analyser vers la droite puis mettre a jour et passer au bloc suivant
-                nbPionsConcernes = ajouterADroite(ligne,positionBlocAjouter, longueur, joueur,nbPionsConcernes);
-                if( nbPionsConcernes > 0)
-                    valeurTotale += getValeurPertinenceBloc(nbPionsConcernes);
+                if( estVideADroite(ligne, i)){
+                    nbPionsConcernes = ajouterADroite(ligne,positionBlocAjouter, joueur,nbPionsConcernes);
+                    if( nbPionsConcernes > 0)
+                        valeurTotale += getValeurPertinenceBloc(nbPionsConcernes);
+                }
+
             }
         }
         return valeurTotale;
     }
     //Retourne le nouveau nbPionsConcernes
-    public static int ajouterADroite(ArrayList<int[]> ligne, int positionBlocAjouter, int longueur, int joueur, int nbPionsConcernes){
+    public static int ajouterADroite(ArrayList<int[]> ligne, int positionBlocAjouter, int joueur, int tailleBloc){
+        int nbPionsConcernes = tailleBloc;
+        int longueur = nbPionsConcernes;
+        int positionCourante = positionBlocAjouter;
         while (longueur <5) {
-            //Si plus de bloc disponible.
-            if (positionBlocAjouter>= ligne.size() ||
-                    (getTypeBloc(ligne,positionBlocAjouter) != BLOC_VIDE &&
-                            getTypeBloc(ligne,positionBlocAjouter) != joueur)) return 0;
+            //Ennemi ou plus de bloc
+            if (positionCourante>= ligne.size() ||
+                    (getTypeBloc(ligne,positionCourante) != BLOC_VIDE &&
+                            getTypeBloc(ligne,positionCourante) != joueur)){
+                if(getTypeBloc(ligne,positionBlocAjouter-2)==BLOC_VIDE){
+                    longueur+=ligne.get(positionBlocAjouter-2)[INDEX_LONG];
+                    if(longueur>=5) return nbPionsConcernes;
+                }
+                return 0;
+            }
             //Si le bloc est vide
-            if (getTypeBloc(ligne,positionBlocAjouter) == BLOC_VIDE){
+            if (getTypeBloc(ligne,positionCourante) == BLOC_VIDE){
                 //Si le bloc suivant est null ou enemi
-                if(getTypeBloc(ligne,positionBlocAjouter+1) == BLOC_INEXISTANT ||
-                        (getTypeBloc(ligne,positionBlocAjouter+1)!=joueur &&
-                                getTypeBloc(ligne,positionBlocAjouter+1)!=BLOC_VIDE)){
-                    longueur += ligne.get(positionBlocAjouter)[INDEX_LONG];
+                if(getTypeBloc(ligne,positionCourante+1) == BLOC_INEXISTANT ||
+                        (getTypeBloc(ligne,positionCourante+1)!=joueur &&
+                                getTypeBloc(ligne,positionCourante+1)!=BLOC_VIDE)){
+                    longueur += ligne.get(positionCourante)[INDEX_LONG];
                 } else {
                     //Le cas ou le bloc suivant est au joueur
-                    longueur += ligne.get(positionBlocAjouter)[INDEX_LONG]-1;
+                    longueur += ligne.get(positionCourante)[INDEX_LONG]-1;
                 }
                 //pertinent, on retourne
-                if (longueur >= 5) return nbPionsConcernes;
+                if (longueur >= 5 && tailleBloc!=nbPionsConcernes) return nbPionsConcernes;
             } else {
                 //Si le bloc est ennemi ou nul.
                 //On peut d�duire ici que la longueur < 5 et qu'il n'y a plus de possibilit�s
+                //if( longueur + )
                 return 0 ;
             }
             //On passe au bloc suivant a droite
-            positionBlocAjouter++;
+            positionCourante++;
             //Ce bloc suivant n'est pertinent que s'il est au joueur, car on arrive
             // d'un bloc vide.
-            if(getTypeBloc(ligne, positionBlocAjouter) == joueur){
+            if(getTypeBloc(ligne, positionCourante) == joueur){
                 //+1 pour compenser le -1 dans le bloc vide precedent
-                longueur+= ligne.get(positionBlocAjouter)[INDEX_LONG] + 1;
-                nbPionsConcernes += ligne.get(positionBlocAjouter)[INDEX_LONG];
+                longueur+= ligne.get(positionCourante)[INDEX_LONG] + 1;
+                nbPionsConcernes += ligne.get(positionCourante)[INDEX_LONG];
                 //pertinent
                 if(longueur == 5) return nbPionsConcernes;
                 //non pertinent
                 if( longueur > 5 ) return 0;
 
-                positionBlocAjouter++;
+                positionCourante++;
             }
         }
         //Ne devrait pas arriver.
