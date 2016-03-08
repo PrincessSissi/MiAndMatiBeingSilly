@@ -94,7 +94,7 @@ public class JoueurArtificiel implements Joueur {
         //System.out.println("l : " + positionCoup / grille.getData()[0].length + "c : " + positionCoup % grille.getData()[0].length);
 
 
-        TreeSet<int[]> casesVides = getOrderedCasesVides(grille, noJoueur);
+        TreeSet<int[]> casesVides = getOrderedCasesVides(grille, getAdversaire(noJoueur));
         Iterator<int[]> it_casesVides = casesVides.iterator();
         int[] meilleurCoup = {positionCoup, MIN_VALUE, TIMER_CONTINUE};
 
