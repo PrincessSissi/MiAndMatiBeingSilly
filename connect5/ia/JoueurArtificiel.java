@@ -121,10 +121,10 @@ public class JoueurArtificiel implements Joueur {
 //                coup[0] = caseVide;
 //                meilleurCoup[2] = TIMER_STOP;
 //
-//                return (meilleurCoup[1] > coup[1] ? meilleurCoup : coup);
+//                return (meilleurCoup[1] >= coup[1] ? meilleurCoup : coup);
 //            }
 
-            if(coup[1] > meilleurCoup[1]) {
+            if(coup[1] >= meilleurCoup[1]) {
                 meilleurCoup = new int[]{caseVide, coup[1], TIMER_CONTINUE};
 
                 if(meilleurCoup[1] > alpha) {
