@@ -56,8 +56,9 @@ public class JoueurArtificiel implements Joueur {
         int noJoueur = ((grille.getSize() - casesVides.size()) % 2) + 1;
 
         if(grille.nbLibre() == grille.getSize()){
-            int coup = getCaseAleatoire(grille);
-            return new Position(coup / nbCol, coup % nbCol);
+            //int coup = getCaseAleatoire(grille);
+            //return new Position(coup / nbCol, coup % nbCol);
+            return new Position(5,7);
         }
         int[] choix = negaMaxInit(noJoueur, grille);
 

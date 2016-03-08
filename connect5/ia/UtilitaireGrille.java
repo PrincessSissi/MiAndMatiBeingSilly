@@ -472,15 +472,17 @@ public class UtilitaireGrille {
                     //Mettre a jour petinence de la grille
                     //Passer au bloc suivant
                     valeurTotale += getValeurPertinenceBloc(nbPionsConcernes);
-                    continue;
                 }
                 //Retirer le vide a droite temporaire
                 longueur-= longueurVideTemp;
                 int positionBlocAjouter = i+1;
                 //Analyser vers la droite puis mettre a jour et passer au bloc suivant
-                nbPionsConcernes = ajouterADroite(ligne,positionBlocAjouter, longueur, joueur,nbPionsConcernes);
-                if( nbPionsConcernes > 0)
-                    valeurTotale += getValeurPertinenceBloc(nbPionsConcernes);
+                if( estVideADroite(ligne, i)){
+                    nbPionsConcernes = ajouterADroite(ligne,positionBlocAjouter, longueur, joueur,nbPionsConcernes);
+                    if( nbPionsConcernes > 0)
+                        valeurTotale += getValeurPertinenceBloc(nbPionsConcernes);
+                }
+
             }
         }
         return valeurTotale;
@@ -488,10 +490,16 @@ public class UtilitaireGrille {
     //Retourne le nouveau nbPionsConcernes
     public static int ajouterADroite(ArrayList<int[]> ligne, int positionBlocAjouter, int longueur, int joueur, int nbPionsConcernes){
         while (longueur <5) {
-            //Si plus de bloc disponible.
+            //Ennemi ou plus de bloc
             if (positionBlocAjouter>= ligne.size() ||
                     (getTypeBloc(ligne,positionBlocAjouter) != BLOC_VIDE &&
-                            getTypeBloc(ligne,positionBlocAjouter) != joueur)) return 0;
+                            getTypeBloc(ligne,positionBlocAjouter) != joueur)){
+                if(getTypeBloc(ligne,positionBlocAjouter-2)==BLOC_VIDE){
+                    longueur+=ligne.get(positionBlocAjouter-2)[INDEX_LONG];
+                    if(longueur>=5) return nbPionsConcernes;
+                }
+                return 0;
+            }
             //Si le bloc est vide
             if (getTypeBloc(ligne,positionBlocAjouter) == BLOC_VIDE){
                 //Si le bloc suivant est null ou enemi
@@ -508,6 +516,7 @@ public class UtilitaireGrille {
             } else {
                 //Si le bloc est ennemi ou nul.
                 //On peut d�duire ici que la longueur < 5 et qu'il n'y a plus de possibilit�s
+                //if( longueur + )
                 return 0 ;
             }
             //On passe au bloc suivant a droite
