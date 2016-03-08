@@ -206,7 +206,7 @@ public class UtilitaireGrille {
         return blocs;
     }
 
-    public static Boolean finPartie(Grille grille, int positionCoup){
+    public static Boolean gagneOuNul(Grille grille, int positionCoup){
         if (positionCoup == -1) return false; // Cas limite sur la premiere (fausse) iteration de l'arbre.
         return (ligneHorizontaleGagnante(grille, positionCoup)
             || ligneVerticaleGagnante(grille, positionCoup)
@@ -407,9 +407,9 @@ public class UtilitaireGrille {
     static int INDEX_LONG = 1;
     static int BLOC_VIDE = 0;
     static int BLOC_INEXISTANT = -1;
+    static int POIDS_PERTINENCE = 5;
     public static int determinerPertinence(ArrayList<ArrayList<int[]>> grille, int joueur){
         int valeurTotale=0;
-        int POIDS_PERTINENCE = 5;
         //pour chaque ligne
 
         Iterator<ArrayList<int[]>> it = grille.iterator();
@@ -428,7 +428,12 @@ public class UtilitaireGrille {
 
                 // Cas optimal
                 if(nbPionsConcernes == 4 && estUnCasOptimal(ligne, i, joueur)) {
-                    valeurTotale += (int) Math.pow(POIDS_PERTINENCE, ++nbPionsConcernes);
+                    valeurTotale += getValeurPertinenceBloc(++nbPionsConcernes);
+                    continue;
+                }
+
+                if(nbPionsConcernes == 5){
+                    valeurTotale += (int) getValeurPertinenceBloc(6);
                     continue;
                 }
 
@@ -466,7 +471,7 @@ public class UtilitaireGrille {
                     //Analyse du bloc terminee.
                     //Mettre a jour petinence de la grille
                     //Passer au bloc suivant
-                    valeurTotale += (int) Math.pow(POIDS_PERTINENCE, nbPionsConcernes);
+                    valeurTotale += getValeurPertinenceBloc(nbPionsConcernes);
                     continue;
                 }
                 //Retirer le vide a droite temporaire
@@ -475,7 +480,7 @@ public class UtilitaireGrille {
                 //Analyser vers la droite puis mettre a jour et passer au bloc suivant
                 nbPionsConcernes = ajouterADroite(ligne,positionBlocAjouter, longueur, joueur,nbPionsConcernes);
                 if( nbPionsConcernes > 0)
-                    valeurTotale += (int) Math.pow(POIDS_PERTINENCE, nbPionsConcernes);
+                    valeurTotale += getValeurPertinenceBloc(nbPionsConcernes);
             }
         }
         return valeurTotale;
@@ -524,6 +529,11 @@ public class UtilitaireGrille {
         //Ne devrait pas arriver.
         return 0;
     }
+
+    public static int getValeurPertinenceBloc(int score) {
+        return (int) Math.pow(POIDS_PERTINENCE , score);
+    }
+
     public static int getTypeBloc(ArrayList<int[]> ligne, int positionBloc){
         if (positionBloc < 0 || positionBloc >= ligne.size()) return BLOC_INEXISTANT;
         return ligne.get(positionBloc)[INDEX_TYPE];

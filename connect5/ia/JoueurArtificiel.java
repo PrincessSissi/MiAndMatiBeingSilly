@@ -53,8 +53,9 @@ public class JoueurArtificiel implements Joueur {
         this.debugGrille = grille.clone();
 
         ArrayList<Integer> casesVides = getCasesVides(grille);
-        int noJoueur = (grille.getSize() - casesVides.size()) % 2;
-        int[] choix = negaMax(getAdversaire(++noJoueur), grille, MIN_VALUE, MAX_VALUE, -1, 0);
+        int noJoueur = ((grille.getSize() - casesVides.size()) % 2) + 1;
+
+        int[] choix = negaMaxInit(noJoueur, grille);
 
         int nbCol = grille.getData()[0].length;
 
@@ -70,6 +71,10 @@ public class JoueurArtificiel implements Joueur {
         return "Simon Drouin (DROS04078908)  et  Mathy Scott (SCOM15079104)";
     }
 
+    private int[] negaMaxInit(int noJoueur, Grille grille) {
+        return negaMax(noJoueur, grille, MIN_VALUE, MAX_VALUE, -1, 0);
+    }
+
     // noJoueur est 0 ou 1.  (0 ==> max, 1 ==> min)
     // Pseudo code de wiki, la version NegaMax
     // https://fr.wikipedia.org/wiki/%C3%89lagage_alpha-b%C3%AAta
@@ -77,25 +82,23 @@ public class JoueurArtificiel implements Joueur {
     // Je retourne le format [numeroCase , valeur, flag_du_timer] pour éventuellement garder une trace des noeuds
     // afin de pouvoir retourner une valeur pertinente en temps réel.
     private int[] negaMax(int noJoueur, Grille grille, int alpha, int beta, int positionCoup, int profondeur){
-        //if(System.currentTimeMillis() - DEBUT_TIMER > ALMOST_TWO_SECONDS) {
-            //DEBUG
-        //    System.out.println("TIMEOUT profondeur: " + profondeur);
-        //    return new int[]{positionCoup, evaluate(grille, noJoueur), TIMER_STOP};
-        //}
 
-        if(UtilitaireGrille.finPartie(grille, positionCoup)){
-            return new int[]{positionCoup, MIN_VALUE/profondeur, TIMER_CONTINUE};
-        }
+//        if(System.currentTimeMillis() - DEBUT_TIMER > ALMOST_TWO_SECONDS) {
+//            //DEBUG
+//            System.out.println("TIMEOUT profondeur: " + profondeur);
+//            return new int[]{positionCoup, evaluate(grille, noJoueur), TIMER_STOP};
+//        }
 
-        if (profondeur == PROFONDEUR_MAX) return new int[]{positionCoup ,evaluate(grille,noJoueur), TIMER_CONTINUE};
+        if (profondeur == PROFONDEUR_MAX) return new int[]{positionCoup, evaluate(grille,noJoueur), TIMER_CONTINUE};
         profondeur++;
         //DEBUG
         //System.out.println("Count: " + COUNT++);
         //System.out.println("l : " + positionCoup / grille.getData()[0].length + "c : " + positionCoup % grille.getData()[0].length);
 
 
-        TreeSet<int[]> casesVides = getOrderedCasesVides(grille, getAdversaire(noJoueur));
+        TreeSet<int[]> casesVides = getOrderedCasesVides(grille, noJoueur);
         Iterator<int[]> it_casesVides = casesVides.iterator();
+
         int[] meilleurCoup = {positionCoup, MIN_VALUE, TIMER_CONTINUE};
         if(casesVides.size()==1 && grille.nbLibre() == grille.getSize()){
             int[] coup = {it_casesVides.next()[0], 0 ,TIMER_CONTINUE};
@@ -106,7 +109,11 @@ public class JoueurArtificiel implements Joueur {
             int caseVide = it_casesVides.next()[0];
 
             Grille grilleProchainCoup = grille.clone();
-            grilleProchainCoup.set(caseVide / grille.getData()[0].length, caseVide % grille.getData()[0].length, getAdversaire(noJoueur));
+            grilleProchainCoup.set(caseVide / grille.getData()[0].length, caseVide % grille.getData()[0].length, noJoueur);
+
+            if(UtilitaireGrille.gagneOuNul(grilleProchainCoup, caseVide)){
+                return new int[]{caseVide, MAX_VALUE/profondeur, TIMER_CONTINUE};
+            }
 
             int[] coup = negaMax(getAdversaire(noJoueur), grilleProchainCoup, -beta, -alpha, caseVide, profondeur);
             coup[1] = -coup[1];
@@ -155,9 +162,9 @@ public class JoueurArtificiel implements Joueur {
 
     private TreeSet<int[]> getOrderedCasesVides(Grille grille, int noJoueur) {
         //premier coup
-        if( grille.getSize() == grille.nbLibre()){
-            return getCaseAleatoire(grille);
-        }
+        if( grille.getSize() == grille.nbLibre()) return getCaseAleatoire(grille);
+
+        int valeurGrille = evaluate(grille, noJoueur);
 
         TreeSet<Integer> casesVides = UtilitaireGrille.getCasesVidesRadius2(grille);
         Iterator<Integer> it_casesVides = casesVides.iterator();
@@ -172,7 +179,7 @@ public class JoueurArtificiel implements Joueur {
 
             grilleTmp.set(caseVide / grille.getData()[0].length, caseVide % grille.getData()[0].length, noJoueur);
             evaluations[i][0] = caseVide;
-            evaluations[i][1] = Math.abs(evaluate(grilleTmp, noJoueur));
+            evaluations[i][1] = Math.abs(valeurGrille - evaluate(grilleTmp, noJoueur));
 
             i++;
         }
@@ -209,8 +216,9 @@ public class JoueurArtificiel implements Joueur {
         int pertinenceDA = UtilitaireGrille.determinerPertinence(blocsDiagonauxAscendants,noJoueur);
         int pertinenceDAAdv = UtilitaireGrille.determinerPertinence(blocsDiagonauxAscendants,getAdversaire(noJoueur)) - 1;
 
-        return pertinenceV + pertinenceH + pertinenceDD + pertinenceDA
-            - (pertinenceAdvV + pertinenceAdvH + pertinenceDDAdv + pertinenceDAAdv);
+        int total = pertinenceV + pertinenceH + pertinenceDD + pertinenceDA
+                - (pertinenceAdvV + pertinenceAdvH + pertinenceDDAdv + pertinenceDAAdv);
+        return total;
     }
 
     //prof
