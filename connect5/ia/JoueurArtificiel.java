@@ -77,11 +77,11 @@ public class JoueurArtificiel implements Joueur {
     // Je retourne le format [numeroCase , valeur, flag_du_timer] pour éventuellement garder une trace des noeuds
     // afin de pouvoir retourner une valeur pertinente en temps réel.
     private int[] negaMax(int noJoueur, Grille grille, int alpha, int beta, int positionCoup, int profondeur){
-        if(System.currentTimeMillis() - DEBUT_TIMER > ALMOST_TWO_SECONDS) {
+        //if(System.currentTimeMillis() - DEBUT_TIMER > ALMOST_TWO_SECONDS) {
             //DEBUG
-            System.out.println("TIMEOUT profondeur: " + profondeur);
-            return new int[]{positionCoup, evaluate(grille, noJoueur), TIMER_STOP};
-        }
+        //    System.out.println("TIMEOUT profondeur: " + profondeur);
+        //    return new int[]{positionCoup, evaluate(grille, noJoueur), TIMER_STOP};
+        //}
 
         if(UtilitaireGrille.finPartie(grille, positionCoup)){
             return new int[]{positionCoup, MIN_VALUE/profondeur, TIMER_CONTINUE};
@@ -97,7 +97,10 @@ public class JoueurArtificiel implements Joueur {
         TreeSet<int[]> casesVides = getOrderedCasesVides(grille, getAdversaire(noJoueur));
         Iterator<int[]> it_casesVides = casesVides.iterator();
         int[] meilleurCoup = {positionCoup, MIN_VALUE, TIMER_CONTINUE};
-
+        if(casesVides.size()==1 && grille.nbLibre() == grille.getSize()){
+            int[] coup = {it_casesVides.next()[0], 0 ,TIMER_CONTINUE};
+            return coup;
+        }
 
         while(it_casesVides.hasNext()){
             int caseVide = it_casesVides.next()[0];
@@ -108,12 +111,12 @@ public class JoueurArtificiel implements Joueur {
             int[] coup = negaMax(getAdversaire(noJoueur), grilleProchainCoup, -beta, -alpha, caseVide, profondeur);
             coup[1] = -coup[1];
 
-            if (coup[2] == TIMER_STOP) {
-                coup[0] = caseVide;
-                meilleurCoup[2] = TIMER_STOP;
-
-                return (meilleurCoup[1] > coup[1] ? meilleurCoup : coup);
-            }
+//            if (coup[2] == TIMER_STOP) {
+//                coup[0] = caseVide;
+//                meilleurCoup[2] = TIMER_STOP;
+//
+//                return (meilleurCoup[1] > coup[1] ? meilleurCoup : coup);
+//            }
 
             if(coup[1] > meilleurCoup[1]) {
                 meilleurCoup = new int[]{caseVide, coup[1], TIMER_CONTINUE};
@@ -129,7 +132,33 @@ public class JoueurArtificiel implements Joueur {
         return meilleurCoup;
     }
 
+    private TreeSet<int[]> getCaseAleatoire(Grille grille){
+        TreeSet<int[]> casesVides = new TreeSet<int[]>(new Comparator<int[]>(){
+            @Override
+            public int compare ( int[] o1, int[] o2){
+                return o2[1] - o1[1];
+            }
+        });
+        int nbCols = UtilitaireGrille.getNbCols(grille);
+        int nbLigs = UtilitaireGrille.getNbLigs(grille);
+        int minCol = nbCols/3;
+        int maxCol = minCol+minCol;
+        int minLig = nbLigs/3;
+        int maxLig = minLig+minLig;
+        Random random = new Random();
+        int l = random.nextInt(maxLig-minLig+1) +minLig;
+        int c = random.nextInt(maxCol-minCol+1) + minCol;
+        int[] coup = {l*nbCols+c,0};
+        casesVides.add(coup);
+        return casesVides;
+    }
+
     private TreeSet<int[]> getOrderedCasesVides(Grille grille, int noJoueur) {
+        //premier coup
+        if( grille.getSize() == grille.nbLibre()){
+            return getCaseAleatoire(grille);
+        }
+
         TreeSet<Integer> casesVides = UtilitaireGrille.getCasesVidesRadius2(grille);
         Iterator<Integer> it_casesVides = casesVides.iterator();
 
