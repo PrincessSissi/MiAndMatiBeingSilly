@@ -408,7 +408,7 @@ public class UtilitaireGrille {
     static int BLOC_VIDE = 0;
     static int BLOC_INEXISTANT = -1;
     public static int determinerPertinence(ArrayList<ArrayList<int[]>> grille, int joueur){
-        int totalPionsPertinents=0;
+        int valeurTotale=0;
         int POIDS_PERTINENCE = 5;
         //pour chaque ligne
 
@@ -422,6 +422,12 @@ public class UtilitaireGrille {
                 int longueur = blocCourant[INDEX_LONG];
                 int nbPionsConcernes = blocCourant[INDEX_LONG];
                 int longueurVideTemp = 0;
+
+                // Cas optimal
+                if(nbPionsConcernes == 4 && estUnCasOptimal(ligne, i, joueur)) {
+                    valeurTotale += (int) Math.pow(POIDS_PERTINENCE, ++nbPionsConcernes);
+                    continue;
+                }
 
                 //evaluer la pertinence du bloc dans sa ligne
                 if (blocCourant[INDEX_TYPE] == joueur) {
@@ -459,8 +465,7 @@ public class UtilitaireGrille {
                         //Analyse du bloc terminee.
                         //Mettre a jour petinence de la grille
                         //Passer au bloc suivant
-                        if(nbPionsConcernes == 4 && estUnCasOptimal(ligne, i)) nbPionsConcernes++;
-                        totalPionsPertinents += nbPionsConcernes;
+                        valeurTotale += (int) Math.pow(POIDS_PERTINENCE, nbPionsConcernes);
                         continue;
                     }
                     //Retirer le vide a droite temporaire
@@ -468,14 +473,12 @@ public class UtilitaireGrille {
                     int positionBlocAjouter = i+1;
                     //Analyser vers la droite puis mettre a jour et passer au bloc suivant
                     nbPionsConcernes = ajouterADroite(ligne,positionBlocAjouter, longueur, joueur,nbPionsConcernes);
-                    if( nbPionsConcernes > 0) {
-                        if(nbPionsConcernes == 4 && estUnCasOptimal(ligne, i)) nbPionsConcernes++;
-                        totalPionsPertinents += nbPionsConcernes;
-                    }
+                    if( nbPionsConcernes > 0)
+                        valeurTotale += (int) Math.pow(POIDS_PERTINENCE, nbPionsConcernes);
                 }
             }
         }
-        return (int) Math.pow(POIDS_PERTINENCE, totalPionsPertinents);
+        return valeurTotale;
     }
     //Retourne le nouveau nbPionsConcernes
     public static int ajouterADroite(ArrayList<int[]> ligne, int positionBlocAjouter, int longueur, int joueur, int nbPionsConcernes){
@@ -535,31 +538,15 @@ public class UtilitaireGrille {
         return ligne.get(positionBlocCourant+1)[INDEX_TYPE] == BLOC_VIDE;
     }
 
-    public static boolean estUnCasOptimal(ArrayList<int[]> ligne, int positionBlocCourant){
-        /**
-         * compteur = 0
-         * iterer a gauche
-         *      si une case vide
-         *          garder en memoire la case vide 2
-         *          break;
-     *          compteur++
- *          iterer a droite
-         *      si une case vide
-         *          garder ne memoire la case vide 2
-         *          break;
-     *          compteur++
-         *
- *          si compteur != 4
- *              retourner false
- *
- *          si la case a gauche de la case vide 1 est a nous
-     *          return false
- *          si la case a droite de la casevide 2 est a nous
-     *          return false
- *
- *          return true
-         */
-        return false;
+    public static boolean estUnCasOptimal(ArrayList<int[]> ligne, int bloc, int noJoueur){
+        if (bloc - 1 < 0 || bloc + 1 == ligne.size()) return false;
+        int[] blocGauche = ligne.get(bloc - 1);
+        int[] blocDroite = ligne.get(bloc + 1);
+        if (blocGauche[INDEX_TYPE] != BLOC_VIDE || blocDroite[INDEX_TYPE] != BLOC_VIDE) return false;
+        if(blocGauche[INDEX_LONG] == 1 && bloc - 2 >= 0 && ligne.get(bloc - 2)[INDEX_TYPE] == noJoueur) return false;
+        if(blocDroite[INDEX_LONG] == 1 && bloc + 2 < ligne.size() && ligne.get(bloc + 2)[INDEX_TYPE] == noJoueur) return false;
+
+        return true;
     }
 
 }
