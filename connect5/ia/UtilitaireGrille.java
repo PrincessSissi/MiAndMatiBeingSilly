@@ -423,59 +423,59 @@ public class UtilitaireGrille {
                 int nbPionsConcernes = blocCourant[INDEX_LONG];
                 int longueurVideTemp = 0;
 
+                //evaluer la pertinence du bloc dans sa ligne
+                if (blocCourant[INDEX_TYPE] != joueur) continue;
+
                 // Cas optimal
                 if(nbPionsConcernes == 4 && estUnCasOptimal(ligne, i, joueur)) {
                     valeurTotale += (int) Math.pow(POIDS_PERTINENCE, ++nbPionsConcernes);
                     continue;
                 }
 
-                //evaluer la pertinence du bloc dans sa ligne
-                if (blocCourant[INDEX_TYPE] == joueur) {
-                    if (blocCourant[INDEX_LONG] > 5) continue;
+                if (blocCourant[INDEX_LONG] > 5) continue;
 
-                    if (estVideAGauche(ligne,i)){
-                        //Si le bloc suivant est ennemi ou null
-                        if (getTypeBloc(ligne, i-2) == BLOC_INEXISTANT ||
-                                (getTypeBloc(ligne,i-2) != joueur && getTypeBloc(ligne,i-2)!= BLOC_VIDE)){
-                            //Ajouter taille du vide a gauche
-                            longueur+= ligne.get(i-1)[INDEX_LONG];
-                        } else {
-                            //Si le bloc suivant est au joueur
-                            //Ajouter taille du vide a gauche -1
-                            //(Permet d'eviter de faire 6)
-                            longueur+= ligne.get(i-1)[INDEX_LONG] -1;
-                        }
+                if (estVideAGauche(ligne,i)){
+                    //Si le bloc suivant est ennemi ou null
+                    if (getTypeBloc(ligne, i-2) == BLOC_INEXISTANT ||
+                            (getTypeBloc(ligne,i-2) != joueur && getTypeBloc(ligne,i-2)!= BLOC_VIDE)){
+                        //Ajouter taille du vide a gauche
+                        longueur+= ligne.get(i-1)[INDEX_LONG];
+                    } else {
+                        //Si le bloc suivant est au joueur
+                        //Ajouter taille du vide a gauche -1
+                        //(Permet d'eviter de faire 6)
+                        longueur+= ligne.get(i-1)[INDEX_LONG] -1;
                     }
-                    if ( estVideADroite(ligne,i)){
-                        //Si le bloc suivant est ennemi ou null
-                        if(getTypeBloc(ligne, i+2) == BLOC_INEXISTANT ||
-                                (getTypeBloc(ligne,i+2) != joueur && getTypeBloc(ligne,i+2) != BLOC_VIDE)){
-                            //Ajouter temporairement la longueur du vide a droite
-                            longueur+=ligne.get(i+1)[INDEX_LONG];
-                            longueurVideTemp = ligne.get(i+1)[INDEX_LONG];
-                        } else {
-                            //Si le bloc suivant est au joueur
-                            //Ajouteur temporairement la longueur du vide a droite -1
-                            //(Permet d'eviter de faire 6)
-                            longueur += ligne.get(i+1)[INDEX_LONG] -1;
-                            longueurVideTemp = ligne.get(i+1)[INDEX_LONG]-1;
-                        }
-                    }
-                    if(longueur>= 5){
-                        //Analyse du bloc terminee.
-                        //Mettre a jour petinence de la grille
-                        //Passer au bloc suivant
-                        valeurTotale += (int) Math.pow(POIDS_PERTINENCE, nbPionsConcernes);
-                        continue;
-                    }
-                    //Retirer le vide a droite temporaire
-                    longueur-= longueurVideTemp;
-                    int positionBlocAjouter = i+1;
-                    //Analyser vers la droite puis mettre a jour et passer au bloc suivant
-                    nbPionsConcernes = ajouterADroite(ligne,positionBlocAjouter, longueur, joueur,nbPionsConcernes);
-                    if( nbPionsConcernes > 0)
-                        valeurTotale += (int) Math.pow(POIDS_PERTINENCE, nbPionsConcernes);
                 }
+                if ( estVideADroite(ligne,i)){
+                    //Si le bloc suivant est ennemi ou null
+                    if(getTypeBloc(ligne, i+2) == BLOC_INEXISTANT ||
+                            (getTypeBloc(ligne,i+2) != joueur && getTypeBloc(ligne,i+2) != BLOC_VIDE)){
+                        //Ajouter temporairement la longueur du vide a droite
+                        longueur+=ligne.get(i+1)[INDEX_LONG];
+                        longueurVideTemp = ligne.get(i+1)[INDEX_LONG];
+                    } else {
+                        //Si le bloc suivant est au joueur
+                        //Ajouteur temporairement la longueur du vide a droite -1
+                        //(Permet d'eviter de faire 6)
+                        longueur += ligne.get(i+1)[INDEX_LONG] -1;
+                        longueurVideTemp = ligne.get(i+1)[INDEX_LONG]-1;
+                    }
+                }
+                if(longueur>= 5){
+                    //Analyse du bloc terminee.
+                    //Mettre a jour petinence de la grille
+                    //Passer au bloc suivant
+                    valeurTotale += (int) Math.pow(POIDS_PERTINENCE, nbPionsConcernes);
+                    continue;
+                }
+                //Retirer le vide a droite temporaire
+                longueur-= longueurVideTemp;
+                int positionBlocAjouter = i+1;
+                //Analyser vers la droite puis mettre a jour et passer au bloc suivant
+                nbPionsConcernes = ajouterADroite(ligne,positionBlocAjouter, longueur, joueur,nbPionsConcernes);
+                if( nbPionsConcernes > 0)
+                    valeurTotale += (int) Math.pow(POIDS_PERTINENCE, nbPionsConcernes);
             }
         }
         return valeurTotale;
