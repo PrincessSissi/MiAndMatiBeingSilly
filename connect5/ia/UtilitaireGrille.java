@@ -433,7 +433,7 @@ public class UtilitaireGrille {
                 }
 
                 if(nbPionsConcernes == 5){
-                    valeurTotale += (int) getValeurPertinenceBloc(6);
+                    valeurTotale += getValeurPertinenceBloc(++nbPionsConcernes);
                     continue;
                 }
 

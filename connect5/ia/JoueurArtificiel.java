@@ -21,7 +21,7 @@ public class JoueurArtificiel implements Joueur {
     private final Random random = new Random();
 
     private static int COUNT = 0; //DEBUG
-    private int PROFONDEUR_MAX = 5;
+    private int PROFONDEUR_MAX = 6;
 
     private static long DEBUT_TIMER = 0;
     private static long ALMOST_TWO_SECONDS = 1900;
@@ -46,18 +46,20 @@ public class JoueurArtificiel implements Joueur {
      */
     @Override
     public Position getProchainCoup(Grille grille, int delais) {
+        int nbCol = grille.getData()[0].length;
         // DEBUG
         COUNT = 0;
 
         DEBUT_TIMER = System.currentTimeMillis();
-        this.debugGrille = grille.clone();
 
         ArrayList<Integer> casesVides = getCasesVides(grille);
         int noJoueur = ((grille.getSize() - casesVides.size()) % 2) + 1;
 
+        if(grille.nbLibre() == grille.getSize()){
+            int coup = getCaseAleatoire(grille);
+            return new Position(coup / nbCol, coup % nbCol);
+        }
         int[] choix = negaMaxInit(noJoueur, grille);
-
-        int nbCol = grille.getData()[0].length;
 
         return new Position(choix[0] / nbCol, choix[0] % nbCol);
     }
@@ -100,10 +102,6 @@ public class JoueurArtificiel implements Joueur {
         Iterator<int[]> it_casesVides = casesVides.iterator();
 
         int[] meilleurCoup = {positionCoup, MIN_VALUE, TIMER_CONTINUE};
-        if(casesVides.size()==1 && grille.nbLibre() == grille.getSize()){
-            int[] coup = {it_casesVides.next()[0], 0 ,TIMER_CONTINUE};
-            return coup;
-        }
 
         while(it_casesVides.hasNext()){
             int caseVide = it_casesVides.next()[0];
@@ -139,13 +137,8 @@ public class JoueurArtificiel implements Joueur {
         return meilleurCoup;
     }
 
-    private TreeSet<int[]> getCaseAleatoire(Grille grille){
-        TreeSet<int[]> casesVides = new TreeSet<int[]>(new Comparator<int[]>(){
-            @Override
-            public int compare ( int[] o1, int[] o2){
-                return o2[1] - o1[1];
-            }
-        });
+    private int getCaseAleatoire(Grille grille){
+
         int nbCols = UtilitaireGrille.getNbCols(grille);
         int nbLigs = UtilitaireGrille.getNbLigs(grille);
         int minCol = nbCols/3;
@@ -155,15 +148,12 @@ public class JoueurArtificiel implements Joueur {
         Random random = new Random();
         int l = random.nextInt(maxLig-minLig+1) +minLig;
         int c = random.nextInt(maxCol-minCol+1) + minCol;
-        int[] coup = {l*nbCols+c,0};
-        casesVides.add(coup);
-        return casesVides;
+        int coup = l*nbCols+c;
+
+        return coup;
     }
 
     private TreeSet<int[]> getOrderedCasesVides(Grille grille, int noJoueur) {
-        //premier coup
-        if( grille.getSize() == grille.nbLibre()) return getCaseAleatoire(grille);
-
         int valeurGrille = evaluate(grille, noJoueur);
 
         TreeSet<Integer> casesVides = UtilitaireGrille.getCasesVidesRadius2(grille);
