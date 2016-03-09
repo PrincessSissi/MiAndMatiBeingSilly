@@ -17,15 +17,11 @@ import connect5.Position;
 import java.util.*;
 
 public class JoueurArtificiel implements Joueur {
-
-    private final Random random = new Random();
-
     private int PROFONDEUR_MAX = 5;
-
-    private static long DEBUT_TIMER = 0;
-    private static long ALMOST_TWO_SECONDS = 10000;
-    private static int TIMER_CONTINUE = 0;
-    private static int TIMER_STOP = 1;
+    private int DELAIS = -1;
+    private long DEBUT_TIMER = 0;
+    private int TIMER_CONTINUE = 0;
+    private int TIMER_STOP = 1;
     private int MAX_VALUE = 100000000;
     private int MIN_VALUE = -100000000;
 
@@ -42,6 +38,9 @@ public class JoueurArtificiel implements Joueur {
      */
     @Override
     public Position getProchainCoup(Grille grille, int delais) {
+        if(DELAIS ==-1){ DELAIS = delais-50; }
+        DEBUT_TIMER = System.currentTimeMillis();
+
         int nbCol = grille.getData()[0].length;
 
         DEBUT_TIMER = System.currentTimeMillis();
@@ -79,7 +78,7 @@ public class JoueurArtificiel implements Joueur {
     // afin de pouvoir retourner une valeur pertinente en temps réel.
     private int[] negaMax(int noJoueur, Grille grille, int alpha, int beta, int positionCoup, int profondeur){
 
-        if(System.currentTimeMillis() - DEBUT_TIMER > ALMOST_TWO_SECONDS) {
+        if(System.currentTimeMillis() - DEBUT_TIMER > DELAIS) {
             //DEBUG
             System.out.println("TIMEOUT profondeur: " + profondeur);
             return new int[]{positionCoup, evaluate(grille, noJoueur)/profondeur, TIMER_STOP};
