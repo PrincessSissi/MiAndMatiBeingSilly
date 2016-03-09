@@ -13,15 +13,19 @@ import connect5.Grille;
 import connect5.Joueur;
 import connect5.Position;
 
-import java.util.*;
+import java.util.Random;
+import java.util.ArrayList;
+import java.util.TreeSet;
+import java.util.Iterator;
+import java.util.Comparator;
 
 public class JoueurArtificiel implements Joueur {
     private final Random random = new Random();
 
     private static int COUNT = 0; //DEBUG
     private int PROFONDEUR_MAX = 5;
-    private int PROFONDEUR_MIN_LIM =3;
-    private int PROFONDEUR_MAX_LIM =8;
+    private int PROFONDEUR_MIN_LIM =4;
+    private int PROFONDEUR_MAX_LIM =7;
 
     private long DEBUT_TIMER = 0;
     private long DELAIS = -1;
@@ -66,59 +70,7 @@ public class JoueurArtificiel implements Joueur {
         return new Position(choix[0] / nbCol, choix[0] % nbCol);
     }
 
-    private void ajusterProfondeur(Grille grille){
-        long finTimer= System.currentTimeMillis();
-        long tempsExecution = finTimer-DEBUT_TIMER;
-        if (tempsExecution >= DELAIS){
-            if(dernierCoupTimeout){
-                if(PROFONDEUR_5_CASES_ET_MOINS-1 >= PROFONDEUR_MIN_LIM){
-                    PROFONDEUR_5_CASES_ET_MOINS--;
-                }
-                if(PROFONDEUR_10_CASES_ET_MOINS-1 >= PROFONDEUR_MIN_LIM) {
-                    PROFONDEUR_10_CASES_ET_MOINS--;
-                }
-                if(PROFONDEUR_20_CASES_ET_MOINS-1 >= PROFONDEUR_MIN_LIM) {
-                    PROFONDEUR_20_CASES_ET_MOINS--;
-                }
-                if(PROFONDEUR_50_CASES_ET_MOINS-1 >= PROFONDEUR_MIN_LIM) {
-                    PROFONDEUR_50_CASES_ET_MOINS--;
-                }
-                if(PROFONDEUR_80_CASES_ET_MOINS-1 >= PROFONDEUR_MIN_LIM) {
-                    PROFONDEUR_80_CASES_ET_MOINS--;
-                }
-                if(PROFONDEUR_80_CASES_ET_MOINS-1 >= PROFONDEUR_MIN_LIM) {
-                    PROFONDEUR_80_CASES_ET_PLUS--;
-                }
-                System.out.println("\nPROFONDEUR --\n");
-            }
-            dernierCoupTimeout=true;
-        }else{
-            if(dernierCoupTimeout){
-                dernierCoupTimeout=false;
-            }else if(tempsExecution < QUART_DU_DELAIS && tempsExecution > HUITIEME_DU_DELAIS
-                    && grille.nbLibre() >=10) {
-                if(PROFONDEUR_5_CASES_ET_MOINS+1 < PROFONDEUR_MAX_LIM){
-                    PROFONDEUR_5_CASES_ET_MOINS++;
-                }
-                if(PROFONDEUR_10_CASES_ET_MOINS+1 < PROFONDEUR_MAX_LIM) {
-                    PROFONDEUR_10_CASES_ET_MOINS++;
-                }
-                if(PROFONDEUR_20_CASES_ET_MOINS+1 < PROFONDEUR_MAX_LIM) {
-                    PROFONDEUR_20_CASES_ET_MOINS++;
-                }
-                if(PROFONDEUR_50_CASES_ET_MOINS+1 < PROFONDEUR_MAX_LIM) {
-                    PROFONDEUR_50_CASES_ET_MOINS++;
-                }
-                if(PROFONDEUR_80_CASES_ET_MOINS+1 < PROFONDEUR_MAX_LIM) {
-                    PROFONDEUR_80_CASES_ET_MOINS++;
-                }
-                if(PROFONDEUR_80_CASES_ET_MOINS+1 < PROFONDEUR_MAX_LIM) {
-                    PROFONDEUR_80_CASES_ET_PLUS++;
-                }
-                System.out.println("\nPROFONDER ++\n");
-            }
-        }
-    }
+
     public int getAdversaire(int noJoueur){
         return noJoueur == 1 ? 2 : 1;
     }
@@ -190,35 +142,6 @@ public class JoueurArtificiel implements Joueur {
         }
 
         return meilleurCoup;
-    }
-
-    private int PROFONDEUR_5_CASES_ET_MOINS = 8;
-    private int PROFONDEUR_10_CASES_ET_MOINS = 6;
-    private int PROFONDEUR_20_CASES_ET_MOINS = 6;
-    private int PROFONDEUR_50_CASES_ET_MOINS = 5;
-    private int PROFONDEUR_80_CASES_ET_MOINS = 5;
-    private int PROFONDEUR_80_CASES_ET_PLUS = 4;
-
-    private void setProfondeurs(int nbCasesPertinentes){
-        if( nbCasesPertinentes <= 5){
-            PROFONDEUR_MAX=PROFONDEUR_5_CASES_ET_MOINS;
-            PROFONDEUR_MAX_LIM=PROFONDEUR_5_CASES_ET_MOINS;
-        }else if(nbCasesPertinentes <=10){
-            PROFONDEUR_MAX=PROFONDEUR_10_CASES_ET_MOINS;
-            PROFONDEUR_MAX_LIM=PROFONDEUR_10_CASES_ET_MOINS;
-        }else if(nbCasesPertinentes<=20){
-            PROFONDEUR_MAX=PROFONDEUR_20_CASES_ET_MOINS;
-            PROFONDEUR_MAX_LIM=PROFONDEUR_20_CASES_ET_MOINS;
-        }else if(nbCasesPertinentes<=50){
-            PROFONDEUR_MAX=PROFONDEUR_50_CASES_ET_MOINS;
-            PROFONDEUR_MAX_LIM=PROFONDEUR_50_CASES_ET_MOINS;
-        }else if(nbCasesPertinentes<=80){
-            PROFONDEUR_MAX=PROFONDEUR_80_CASES_ET_MOINS;
-            PROFONDEUR_MAX_LIM=PROFONDEUR_80_CASES_ET_MOINS;
-        }else{
-            PROFONDEUR_MAX=PROFONDEUR_80_CASES_ET_PLUS;
-            PROFONDEUR_MAX_LIM=PROFONDEUR_80_CASES_ET_PLUS;
-        }
     }
 
     private int getCaseAleatoire(Grille grille){
@@ -304,5 +227,82 @@ public class JoueurArtificiel implements Joueur {
                     casesVides.add(l*nbcol+c);
 
         return casesVides;
+    }
+
+
+    private int PROFONDEUR_5_CASES_ET_MOINS = 6;
+    private int PROFONDEUR_10_CASES_ET_MOINS = 5;
+    private int PROFONDEUR_20_CASES_ET_MOINS = 5;
+    private int PROFONDEUR_50_CASES_ET_MOINS = 4;
+    private int PROFONDEUR_80_CASES_ET_MOINS = 4;
+    private int PROFONDEUR_80_CASES_ET_PLUS = 4;
+
+    private void setProfondeurs(int nbCasesPertinentes){
+        if( nbCasesPertinentes <= 5){
+            PROFONDEUR_MAX=PROFONDEUR_5_CASES_ET_MOINS;
+        }else if(nbCasesPertinentes <=10){
+            PROFONDEUR_MAX=PROFONDEUR_10_CASES_ET_MOINS;
+        }else if(nbCasesPertinentes<=20){
+            PROFONDEUR_MAX=PROFONDEUR_20_CASES_ET_MOINS;
+        }else if(nbCasesPertinentes<=50){
+            PROFONDEUR_MAX=PROFONDEUR_50_CASES_ET_MOINS;
+        }else if(nbCasesPertinentes<=80){
+            PROFONDEUR_MAX=PROFONDEUR_80_CASES_ET_MOINS;
+        }else{
+            PROFONDEUR_MAX=PROFONDEUR_80_CASES_ET_PLUS;
+        }
+    }
+    private void ajusterProfondeur(Grille grille){
+        long finTimer= System.currentTimeMillis();
+        long tempsExecution = finTimer-DEBUT_TIMER;
+        if (tempsExecution >= DELAIS){
+            if(dernierCoupTimeout){
+                if(PROFONDEUR_5_CASES_ET_MOINS-1 >= PROFONDEUR_MIN_LIM){
+                    PROFONDEUR_5_CASES_ET_MOINS--;
+                }
+                if(PROFONDEUR_10_CASES_ET_MOINS-1 >= PROFONDEUR_MIN_LIM) {
+                    PROFONDEUR_10_CASES_ET_MOINS--;
+                }
+                if(PROFONDEUR_20_CASES_ET_MOINS-1 >= PROFONDEUR_MIN_LIM) {
+                    PROFONDEUR_20_CASES_ET_MOINS--;
+                }
+                if(PROFONDEUR_50_CASES_ET_MOINS-1 >= PROFONDEUR_MIN_LIM) {
+                    PROFONDEUR_50_CASES_ET_MOINS--;
+                }
+                if(PROFONDEUR_80_CASES_ET_MOINS-1 >= PROFONDEUR_MIN_LIM) {
+                    PROFONDEUR_80_CASES_ET_MOINS--;
+                }
+                if(PROFONDEUR_80_CASES_ET_MOINS-1 >= PROFONDEUR_MIN_LIM) {
+                    PROFONDEUR_80_CASES_ET_PLUS--;
+                }
+                //System.out.println("\nPROFONDEUR --\n");
+            }
+            dernierCoupTimeout=true;
+        }else{
+            if(dernierCoupTimeout){
+                dernierCoupTimeout=false;
+            }else if(tempsExecution < QUART_DU_DELAIS && tempsExecution > HUITIEME_DU_DELAIS
+                    && grille.nbLibre() >=10) {
+                if(PROFONDEUR_5_CASES_ET_MOINS+1 < PROFONDEUR_MAX_LIM){
+                    PROFONDEUR_5_CASES_ET_MOINS++;
+                }
+                if(PROFONDEUR_10_CASES_ET_MOINS+1 < PROFONDEUR_MAX_LIM) {
+                    PROFONDEUR_10_CASES_ET_MOINS++;
+                }
+                if(PROFONDEUR_20_CASES_ET_MOINS+1 < PROFONDEUR_MAX_LIM) {
+                    PROFONDEUR_20_CASES_ET_MOINS++;
+                }
+                if(PROFONDEUR_50_CASES_ET_MOINS+1 < PROFONDEUR_MAX_LIM) {
+                    PROFONDEUR_50_CASES_ET_MOINS++;
+                }
+                if(PROFONDEUR_80_CASES_ET_MOINS+1 < PROFONDEUR_MAX_LIM) {
+                    PROFONDEUR_80_CASES_ET_MOINS++;
+                }
+                if(PROFONDEUR_80_CASES_ET_MOINS+1 < PROFONDEUR_MAX_LIM) {
+                    PROFONDEUR_80_CASES_ET_PLUS++;
+                }
+                //System.out.println("\nPROFONDER ++\n");
+            }
+        }
     }
 }
