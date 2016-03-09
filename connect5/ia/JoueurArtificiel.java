@@ -129,16 +129,16 @@ public class JoueurArtificiel implements Joueur {
 
     private int getCaseAleatoire(Grille grille){
 
-        int nbCols = UtilitaireGrille.getNbCols(grille);
-        int nbLigs = UtilitaireGrille.getNbLigs(grille);
-        int minCol = nbCols/3;
-        int maxCol = minCol+minCol;
-        int minLig = nbLigs/3;
-        int maxLig = minLig+minLig;
-        Random random = new Random();
-        int l = random.nextInt(maxLig-minLig+1) +minLig;
-        int c = random.nextInt(maxCol-minCol+1) + minCol;
-        int coup = l*nbCols+c;
+        int nbCols      = UtilitaireGrille.getNbCols(grille);
+        int nbLigs      = UtilitaireGrille.getNbLigs(grille);
+        int minCol      = nbCols/3;
+        int maxCol      = minCol+minCol;
+        int minLig      = nbLigs/3;
+        int maxLig      = minLig+minLig;
+        Random random   = new Random();
+        int l           = random.nextInt(maxLig-minLig+1) +minLig;
+        int c           = random.nextInt(maxCol-minCol+1) + minCol;
+        int coup        = l*nbCols+c;
 
         return coup;
     }
