@@ -402,6 +402,25 @@ public class UtilitaireGrille {
     }
 
 
+    /**
+     * 1 pion   = 5^1
+     * 2 pions = 5^2
+     * 3 pions = 5^3
+     * 3 pions avec vide de chaque coté (presque optimal)= 5^4
+     * 4 pions =  5^5
+     * 4 pions (optimal) = 5^6
+     * 5 (gagnant ) 5^7
+     */
+    static int PION1 = 1;
+    static int PION2 = 2;
+    static int PION3 = 3;
+    static int PION3_SEMI_OPTIMAL = 4;
+    static int PION3_OPTIMAL = 5;
+    static int PION4 = 6;
+    static int PION4_OPTIMAL = 7;
+    static int PION5 = 8;
+
+
     //bloc(type,longueur)
     static int INDEX_TYPE = 0;
     static int INDEX_LONG = 1;
@@ -421,19 +440,30 @@ public class UtilitaireGrille {
                 int[] blocCourant = ligne.get(i);
                 int longueur = blocCourant[INDEX_LONG];
                 int nbPionsConcernes = blocCourant[INDEX_LONG];
-                int longueurVideTemp = 0;
 
                 //evaluer la pertinence du bloc dans sa ligne
                 if (blocCourant[INDEX_TYPE] != joueur) continue;
 
-                // Cas optimal
-                if(nbPionsConcernes == 4 && estUnCasOptimal(ligne, i, joueur)) {
-                    valeurTotale += getValeurPertinenceBloc(++nbPionsConcernes);
+                // Cas optimal (3 pions colles)
+                if(nbPionsConcernes == 3 && estUnCasTroisOptimal(ligne, i, joueur)) {
+                    valeurTotale += getValeurPertinenceBloc(PION3_OPTIMAL);
+                    continue;
+                }
+
+                // Cas semi-optimal (3 pions colles)
+                if(nbPionsConcernes == 3 && estUnCasTroisSemiOptimal(ligne, i, joueur)) {
+                    valeurTotale += getValeurPertinenceBloc(PION3_SEMI_OPTIMAL);
+                    continue;
+                }
+
+                // Cas optimal (4 pions colles)
+                if(nbPionsConcernes == 4 && estUnCasQuatreOptimal(ligne, i, joueur)) {
+                    valeurTotale += getValeurPertinenceBloc(PION4_OPTIMAL);
                     continue;
                 }
 
                 if(nbPionsConcernes == 5){
-                    valeurTotale += getValeurPertinenceBloc(++nbPionsConcernes);
+                    valeurTotale += getValeurPertinenceBloc(PION5);
                     continue;
                 }
 
@@ -458,72 +488,82 @@ public class UtilitaireGrille {
                             (getTypeBloc(ligne,i+2) != joueur && getTypeBloc(ligne,i+2) != BLOC_VIDE)){
                         //Ajouter temporairement la longueur du vide a droite
                         longueur+=ligne.get(i+1)[INDEX_LONG];
-                        longueurVideTemp = ligne.get(i+1)[INDEX_LONG];
                     } else {
                         //Si le bloc suivant est au joueur
                         //Ajouteur temporairement la longueur du vide a droite -1
                         //(Permet d'eviter de faire 6)
                         longueur += ligne.get(i+1)[INDEX_LONG] -1;
-                        longueurVideTemp = ligne.get(i+1)[INDEX_LONG]-1;
                     }
                 }
                 if(longueur>= 5){
                     //Analyse du bloc terminee.
                     //Mettre a jour petinence de la grille
                     //Passer au bloc suivant
-                    valeurTotale += getValeurPertinenceBloc(nbPionsConcernes);
-                    continue;
+                    valeurTotale += getValeurPertinenceBloc(setPoidsPions(nbPionsConcernes));
                 }
-                //Retirer le vide a droite temporaire
-                longueur-= longueurVideTemp;
+
+
                 int positionBlocAjouter = i+1;
                 //Analyser vers la droite puis mettre a jour et passer au bloc suivant
-                nbPionsConcernes = ajouterADroite(ligne,positionBlocAjouter, longueur, joueur,nbPionsConcernes);
-                if( nbPionsConcernes > 0)
-                    valeurTotale += getValeurPertinenceBloc(nbPionsConcernes);
+                if( estVideADroite(ligne, i)){
+                    nbPionsConcernes = ajouterADroite(ligne,positionBlocAjouter, joueur,nbPionsConcernes);
+                    if( nbPionsConcernes > 0)
+                        valeurTotale += getValeurPertinenceBloc(nbPionsConcernes);
+                }
+
             }
         }
         return valeurTotale;
     }
     //Retourne le nouveau nbPionsConcernes
-    public static int ajouterADroite(ArrayList<int[]> ligne, int positionBlocAjouter, int longueur, int joueur, int nbPionsConcernes){
+    public static int ajouterADroite(ArrayList<int[]> ligne, int positionBlocAjouter, int joueur, int tailleBloc){
+        int nbPionsConcernes = tailleBloc;
+        int longueur = nbPionsConcernes;
+        int positionCourante = positionBlocAjouter;
         while (longueur <5) {
-            //Si plus de bloc disponible.
-            if (positionBlocAjouter>= ligne.size() ||
-                    (getTypeBloc(ligne,positionBlocAjouter) != BLOC_VIDE &&
-                            getTypeBloc(ligne,positionBlocAjouter) != joueur)) return 0;
+            //Ennemi ou plus de bloc
+            if (positionCourante>= ligne.size() ||
+                    (getTypeBloc(ligne,positionCourante) != BLOC_VIDE &&
+                            getTypeBloc(ligne,positionCourante) != joueur)){
+                if(getTypeBloc(ligne,positionBlocAjouter-2)==BLOC_VIDE){
+                    longueur+=ligne.get(positionBlocAjouter-2)[INDEX_LONG];
+                    if(longueur>=5) return nbPionsConcernes;
+                }
+                return 0;
+            }
             //Si le bloc est vide
-            if (getTypeBloc(ligne,positionBlocAjouter) == BLOC_VIDE){
+            if (getTypeBloc(ligne,positionCourante) == BLOC_VIDE){
                 //Si le bloc suivant est null ou enemi
-                if(getTypeBloc(ligne,positionBlocAjouter+1) == BLOC_INEXISTANT ||
-                        (getTypeBloc(ligne,positionBlocAjouter+1)!=joueur &&
-                                getTypeBloc(ligne,positionBlocAjouter+1)!=BLOC_VIDE)){
-                    longueur += ligne.get(positionBlocAjouter)[INDEX_LONG];
+                if(getTypeBloc(ligne,positionCourante+1) == BLOC_INEXISTANT ||
+                        (getTypeBloc(ligne,positionCourante+1)!=joueur &&
+                                getTypeBloc(ligne,positionCourante+1)!=BLOC_VIDE)){
+                    longueur += ligne.get(positionCourante)[INDEX_LONG];
                 } else {
                     //Le cas ou le bloc suivant est au joueur
-                    longueur += ligne.get(positionBlocAjouter)[INDEX_LONG]-1;
+                    longueur += ligne.get(positionCourante)[INDEX_LONG]-1;
                 }
                 //pertinent, on retourne
-                if (longueur >= 5) return nbPionsConcernes;
+                if (longueur >= 5 && tailleBloc!=nbPionsConcernes) return nbPionsConcernes;
             } else {
                 //Si le bloc est ennemi ou nul.
                 //On peut d�duire ici que la longueur < 5 et qu'il n'y a plus de possibilit�s
+                //if( longueur + )
                 return 0 ;
             }
             //On passe au bloc suivant a droite
-            positionBlocAjouter++;
+            positionCourante++;
             //Ce bloc suivant n'est pertinent que s'il est au joueur, car on arrive
             // d'un bloc vide.
-            if(getTypeBloc(ligne, positionBlocAjouter) == joueur){
+            if(getTypeBloc(ligne, positionCourante) == joueur){
                 //+1 pour compenser le -1 dans le bloc vide precedent
-                longueur+= ligne.get(positionBlocAjouter)[INDEX_LONG] + 1;
-                nbPionsConcernes += ligne.get(positionBlocAjouter)[INDEX_LONG];
+                longueur+= ligne.get(positionCourante)[INDEX_LONG] + 1;
+                nbPionsConcernes += ligne.get(positionCourante)[INDEX_LONG];
                 //pertinent
                 if(longueur == 5) return nbPionsConcernes;
                 //non pertinent
                 if( longueur > 5 ) return 0;
 
-                positionBlocAjouter++;
+                positionCourante++;
             }
         }
         //Ne devrait pas arriver.
@@ -548,7 +588,37 @@ public class UtilitaireGrille {
         return ligne.get(positionBlocCourant+1)[INDEX_TYPE] == BLOC_VIDE;
     }
 
-    public static boolean estUnCasOptimal(ArrayList<int[]> ligne, int bloc, int noJoueur){
+    public static boolean estUnCasTroisSemiOptimal(ArrayList<int[]> ligne, int bloc, int noJoueur){
+        if (bloc - 1 < 0 || bloc + 1 == ligne.size()) return false;
+
+        int[] blocGauche = ligne.get(bloc - 1);
+        int[] blocDroite = ligne.get(bloc + 1);
+
+        if (blocGauche[INDEX_TYPE] != BLOC_VIDE || blocDroite[INDEX_TYPE] != BLOC_VIDE) return false;
+        if (blocGauche[INDEX_LONG] < 2 && blocDroite[INDEX_LONG] < 2) return false;
+
+        if (bloc - 2 >= 0 && ligne.get(bloc - 2)[INDEX_TYPE] == noJoueur) return false;
+        if (bloc + 2 < ligne.size() && ligne.get(bloc + 2)[INDEX_TYPE] == noJoueur) return false;
+
+        return true;
+    }
+
+    public static boolean estUnCasTroisOptimal(ArrayList<int[]> ligne, int bloc, int noJoueur){
+        if (bloc - 1 < 0 || bloc + 1 == ligne.size()) return false;
+
+        int[] blocGauche = ligne.get(bloc - 1);
+        int[] blocDroite = ligne.get(bloc + 1);
+
+        if (blocGauche[INDEX_TYPE] != BLOC_VIDE || blocDroite[INDEX_TYPE] != BLOC_VIDE) return false;
+        if (blocGauche[INDEX_LONG] < 2 || blocDroite[INDEX_LONG] < 2) return false;
+
+        if (bloc - 2 >= 0 && ligne.get(bloc - 2)[INDEX_TYPE] == noJoueur) return false;
+        if (bloc + 2 < ligne.size() && ligne.get(bloc + 2)[INDEX_TYPE] == noJoueur) return false;
+
+        return true;
+    }
+
+    public static boolean estUnCasQuatreOptimal(ArrayList<int[]> ligne, int bloc, int noJoueur){
         if (bloc - 1 < 0 || bloc + 1 == ligne.size()) return false;
         int[] blocGauche = ligne.get(bloc - 1);
         int[] blocDroite = ligne.get(bloc + 1);
@@ -557,6 +627,27 @@ public class UtilitaireGrille {
         if(blocDroite[INDEX_LONG] == 1 && bloc + 2 < ligne.size() && ligne.get(bloc + 2)[INDEX_TYPE] == noJoueur) return false;
 
         return true;
+    }
+
+    public static int setPoidsPions(int nbPions){
+        int poids = 0;
+        switch (nbPions){
+            case 1:
+                poids = PION1;
+                break;
+            case 2:
+                poids = PION2;
+                break;
+            case 3:
+                poids = PION3;
+                break;
+            case 4:
+                poids = PION4;
+                break;
+            default:
+                poids = -1;
+        }
+        return poids;
     }
 
 }
