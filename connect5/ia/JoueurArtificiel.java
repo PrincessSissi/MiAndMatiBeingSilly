@@ -1,5 +1,4 @@
 package connect5.ia;
-import connect5.ia.UtilitaireGrille;
 
 /*
  * Si vous utilisez Java, vous devez modifier ce fichier-ci.
@@ -17,17 +16,22 @@ import connect5.Position;
 import java.util.*;
 
 public class JoueurArtificiel implements Joueur {
-
     private final Random random = new Random();
 
+    private static int COUNT = 0; //DEBUG
     private int PROFONDEUR_MAX = 5;
+    private int PROFONDEUR_MIN_LIM =3;
+    private int PROFONDEUR_MAX_LIM =8;
 
-    private static long DEBUT_TIMER = 0;
-    private static long ALMOST_TWO_SECONDS = 10000;
-    private static int TIMER_CONTINUE = 0;
-    private static int TIMER_STOP = 1;
+    private long DEBUT_TIMER = 0;
+    private long DELAIS = -1;
+    private long QUART_DU_DELAIS =0;
+    private long HUITIEME_DU_DELAIS =0;
+    private int TIMER_CONTINUE = 0;
+    private int TIMER_STOP = 1;
     private int MAX_VALUE = 100000000;
     private int MIN_VALUE = -100000000;
+    private boolean dernierCoupTimeout = false;
 
     /**
      * Voici la fonction à modifier.
@@ -43,21 +47,78 @@ public class JoueurArtificiel implements Joueur {
     @Override
     public Position getProchainCoup(Grille grille, int delais) {
         int nbCol = grille.getData()[0].length;
-
+        if(DELAIS ==-1){
+            DELAIS=delais-50;
+            QUART_DU_DELAIS=delais/4;
+            HUITIEME_DU_DELAIS =delais/8;
+        }
         DEBUT_TIMER = System.currentTimeMillis();
 
-        ArrayList<Integer> casesVides = getCasesVides(grille);
-        int noJoueur = ((grille.getSize() - casesVides.size()) % 2) + 1;
+        int noJoueur = ((grille.getSize() - grille.nbLibre()) % 2) + 1;
 
         if(grille.nbLibre() == grille.getSize()){
             int coup = getCaseAleatoire(grille);
             return new Position(coup / nbCol, coup % nbCol);
         }
-        int[] choix = negaMaxInit(noJoueur, grille);
 
+        int[] choix = negaMaxInit(noJoueur, grille);
+        ajusterProfondeur(grille);
         return new Position(choix[0] / nbCol, choix[0] % nbCol);
     }
 
+    private void ajusterProfondeur(Grille grille){
+        long finTimer= System.currentTimeMillis();
+        long tempsExecution = finTimer-DEBUT_TIMER;
+        if (tempsExecution >= DELAIS){
+            if(dernierCoupTimeout){
+                if(PROFONDEUR_5_CASES_ET_MOINS-1 >= PROFONDEUR_MIN_LIM){
+                    PROFONDEUR_5_CASES_ET_MOINS--;
+                }
+                if(PROFONDEUR_10_CASES_ET_MOINS-1 >= PROFONDEUR_MIN_LIM) {
+                    PROFONDEUR_10_CASES_ET_MOINS--;
+                }
+                if(PROFONDEUR_20_CASES_ET_MOINS-1 >= PROFONDEUR_MIN_LIM) {
+                    PROFONDEUR_20_CASES_ET_MOINS--;
+                }
+                if(PROFONDEUR_50_CASES_ET_MOINS-1 >= PROFONDEUR_MIN_LIM) {
+                    PROFONDEUR_50_CASES_ET_MOINS--;
+                }
+                if(PROFONDEUR_80_CASES_ET_MOINS-1 >= PROFONDEUR_MIN_LIM) {
+                    PROFONDEUR_80_CASES_ET_MOINS--;
+                }
+                if(PROFONDEUR_80_CASES_ET_MOINS-1 >= PROFONDEUR_MIN_LIM) {
+                    PROFONDEUR_80_CASES_ET_PLUS--;
+                }
+                System.out.println("\nPROFONDEUR --\n");
+            }
+            dernierCoupTimeout=true;
+        }else{
+            if(dernierCoupTimeout){
+                dernierCoupTimeout=false;
+            }else if(tempsExecution < QUART_DU_DELAIS && tempsExecution > HUITIEME_DU_DELAIS
+                    && grille.nbLibre() >=10) {
+                if(PROFONDEUR_5_CASES_ET_MOINS+1 < PROFONDEUR_MAX_LIM){
+                    PROFONDEUR_5_CASES_ET_MOINS++;
+                }
+                if(PROFONDEUR_10_CASES_ET_MOINS+1 < PROFONDEUR_MAX_LIM) {
+                    PROFONDEUR_10_CASES_ET_MOINS++;
+                }
+                if(PROFONDEUR_20_CASES_ET_MOINS+1 < PROFONDEUR_MAX_LIM) {
+                    PROFONDEUR_20_CASES_ET_MOINS++;
+                }
+                if(PROFONDEUR_50_CASES_ET_MOINS+1 < PROFONDEUR_MAX_LIM) {
+                    PROFONDEUR_50_CASES_ET_MOINS++;
+                }
+                if(PROFONDEUR_80_CASES_ET_MOINS+1 < PROFONDEUR_MAX_LIM) {
+                    PROFONDEUR_80_CASES_ET_MOINS++;
+                }
+                if(PROFONDEUR_80_CASES_ET_MOINS+1 < PROFONDEUR_MAX_LIM) {
+                    PROFONDEUR_80_CASES_ET_PLUS++;
+                }
+                System.out.println("\nPROFONDER ++\n");
+            }
+        }
+    }
     public int getAdversaire(int noJoueur){
         return noJoueur == 1 ? 2 : 1;
     }
@@ -79,7 +140,7 @@ public class JoueurArtificiel implements Joueur {
     // afin de pouvoir retourner une valeur pertinente en temps réel.
     private int[] negaMax(int noJoueur, Grille grille, int alpha, int beta, int positionCoup, int profondeur){
 
-        if(System.currentTimeMillis() - DEBUT_TIMER > ALMOST_TWO_SECONDS) {
+        if(System.currentTimeMillis() - DEBUT_TIMER > DELAIS) {
             //DEBUG
             System.out.println("TIMEOUT profondeur: " + profondeur);
             return new int[]{positionCoup, evaluate(grille, noJoueur)/profondeur, TIMER_STOP};
@@ -90,6 +151,10 @@ public class JoueurArtificiel implements Joueur {
 
         TreeSet<int[]> casesVides = getOrderedCasesVides(grille, noJoueur);
         Iterator<int[]> it_casesVides = casesVides.iterator();
+
+        if(positionCoup == -1){
+            setProfondeurs(casesVides.size());
+        }
 
         int[] meilleurCoup = {positionCoup, MIN_VALUE, TIMER_CONTINUE};
 
@@ -113,7 +178,6 @@ public class JoueurArtificiel implements Joueur {
                 return (meilleurCoup[1] >= coup[1] ? meilleurCoup : coup);
             }
 
-
             if(coup[1] >= meilleurCoup[1]) {
                 meilleurCoup = new int[]{caseVide, coup[1], TIMER_CONTINUE};
 
@@ -128,6 +192,35 @@ public class JoueurArtificiel implements Joueur {
         return meilleurCoup;
     }
 
+    private int PROFONDEUR_5_CASES_ET_MOINS = 8;
+    private int PROFONDEUR_10_CASES_ET_MOINS = 6;
+    private int PROFONDEUR_20_CASES_ET_MOINS = 6;
+    private int PROFONDEUR_50_CASES_ET_MOINS = 5;
+    private int PROFONDEUR_80_CASES_ET_MOINS = 5;
+    private int PROFONDEUR_80_CASES_ET_PLUS = 4;
+
+    private void setProfondeurs(int nbCasesPertinentes){
+        if( nbCasesPertinentes <= 5){
+            PROFONDEUR_MAX=PROFONDEUR_5_CASES_ET_MOINS;
+            PROFONDEUR_MAX_LIM=PROFONDEUR_5_CASES_ET_MOINS;
+        }else if(nbCasesPertinentes <=10){
+            PROFONDEUR_MAX=PROFONDEUR_10_CASES_ET_MOINS;
+            PROFONDEUR_MAX_LIM=PROFONDEUR_10_CASES_ET_MOINS;
+        }else if(nbCasesPertinentes<=20){
+            PROFONDEUR_MAX=PROFONDEUR_20_CASES_ET_MOINS;
+            PROFONDEUR_MAX_LIM=PROFONDEUR_20_CASES_ET_MOINS;
+        }else if(nbCasesPertinentes<=50){
+            PROFONDEUR_MAX=PROFONDEUR_50_CASES_ET_MOINS;
+            PROFONDEUR_MAX_LIM=PROFONDEUR_50_CASES_ET_MOINS;
+        }else if(nbCasesPertinentes<=80){
+            PROFONDEUR_MAX=PROFONDEUR_80_CASES_ET_MOINS;
+            PROFONDEUR_MAX_LIM=PROFONDEUR_80_CASES_ET_MOINS;
+        }else{
+            PROFONDEUR_MAX=PROFONDEUR_80_CASES_ET_PLUS;
+            PROFONDEUR_MAX_LIM=PROFONDEUR_80_CASES_ET_PLUS;
+        }
+    }
+
     private int getCaseAleatoire(Grille grille){
 
         int nbCols = UtilitaireGrille.getNbCols(grille);
@@ -136,7 +229,6 @@ public class JoueurArtificiel implements Joueur {
         int maxCol = minCol+minCol;
         int minLig = nbLigs/3;
         int maxLig = minLig+minLig;
-        Random random = new Random();
         int l = random.nextInt(maxLig-minLig+1) +minLig;
         int c = random.nextInt(maxCol-minCol+1) + minCol;
         int coup = l*nbCols+c;
