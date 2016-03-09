@@ -402,6 +402,25 @@ public class UtilitaireGrille {
     }
 
 
+    /**
+     * 1 pion   = 5^1
+     * 2 pions = 5^2
+     * 3 pions = 5^3
+     * 3 pions avec vide de chaque coté (presque optimal)= 5^4
+     * 4 pions =  5^5
+     * 4 pions (optimal) = 5^6
+     * 5 (gagnant ) 5^7
+     */
+    static int PION1 = 1;
+    static int PION2 = 2;
+    static int PION3 = 3;
+    static int PION3_SEMI_OPTIMAL = 4;
+    static int PION3_OPTIMAL = 5;
+    static int PION4 = 6;
+    static int PION4_OPTIMAL = 7;
+    static int PION5 = 8;
+
+
     //bloc(type,longueur)
     static int INDEX_TYPE = 0;
     static int INDEX_LONG = 1;
@@ -421,19 +440,30 @@ public class UtilitaireGrille {
                 int[] blocCourant = ligne.get(i);
                 int longueur = blocCourant[INDEX_LONG];
                 int nbPionsConcernes = blocCourant[INDEX_LONG];
-                int longueurVideTemp = 0;
 
                 //evaluer la pertinence du bloc dans sa ligne
                 if (blocCourant[INDEX_TYPE] != joueur) continue;
 
-                // Cas optimal
-                if(nbPionsConcernes == 4 && estUnCasOptimal(ligne, i, joueur)) {
-                    valeurTotale += getValeurPertinenceBloc(++nbPionsConcernes);
+                // Cas optimal (3 pions colles)
+                if(nbPionsConcernes == 3 && estUnCasTroisOptimal(ligne, i, joueur)) {
+                    valeurTotale += getValeurPertinenceBloc(PION3_OPTIMAL);
+                    continue;
+                }
+
+                // Cas semi-optimal (3 pions colles)
+                if(nbPionsConcernes == 3 && estUnCasTroisSemiOptimal(ligne, i, joueur)) {
+                    valeurTotale += getValeurPertinenceBloc(PION3_SEMI_OPTIMAL);
+                    continue;
+                }
+
+                // Cas optimal (4 pions colles)
+                if(nbPionsConcernes == 4 && estUnCasQuatreOptimal(ligne, i, joueur)) {
+                    valeurTotale += getValeurPertinenceBloc(PION4_OPTIMAL);
                     continue;
                 }
 
                 if(nbPionsConcernes == 5){
-                    valeurTotale += getValeurPertinenceBloc(++nbPionsConcernes);
+                    valeurTotale += getValeurPertinenceBloc(PION5);
                     continue;
                 }
 
@@ -458,20 +488,18 @@ public class UtilitaireGrille {
                             (getTypeBloc(ligne,i+2) != joueur && getTypeBloc(ligne,i+2) != BLOC_VIDE)){
                         //Ajouter temporairement la longueur du vide a droite
                         longueur+=ligne.get(i+1)[INDEX_LONG];
-                        longueurVideTemp = ligne.get(i+1)[INDEX_LONG];
                     } else {
                         //Si le bloc suivant est au joueur
                         //Ajouteur temporairement la longueur du vide a droite -1
                         //(Permet d'eviter de faire 6)
                         longueur += ligne.get(i+1)[INDEX_LONG] -1;
-                        longueurVideTemp = ligne.get(i+1)[INDEX_LONG]-1;
                     }
                 }
                 if(longueur>= 5){
                     //Analyse du bloc terminee.
                     //Mettre a jour petinence de la grille
                     //Passer au bloc suivant
-                    valeurTotale += getValeurPertinenceBloc(nbPionsConcernes);
+                    valeurTotale += getValeurPertinenceBloc(setPoidsPions(nbPionsConcernes));
                 }
 
 
@@ -560,7 +588,37 @@ public class UtilitaireGrille {
         return ligne.get(positionBlocCourant+1)[INDEX_TYPE] == BLOC_VIDE;
     }
 
-    public static boolean estUnCasOptimal(ArrayList<int[]> ligne, int bloc, int noJoueur){
+    public static boolean estUnCasTroisSemiOptimal(ArrayList<int[]> ligne, int bloc, int noJoueur){
+        if (bloc - 1 < 0 || bloc + 1 == ligne.size()) return false;
+
+        int[] blocGauche = ligne.get(bloc - 1);
+        int[] blocDroite = ligne.get(bloc + 1);
+
+        if (blocGauche[INDEX_TYPE] != BLOC_VIDE || blocDroite[INDEX_TYPE] != BLOC_VIDE) return false;
+        if (blocGauche[INDEX_LONG] < 2 && blocDroite[INDEX_LONG] < 2) return false;
+
+        if (bloc - 2 >= 0 && ligne.get(bloc - 2)[INDEX_TYPE] == noJoueur) return false;
+        if (bloc + 2 < ligne.size() && ligne.get(bloc + 2)[INDEX_TYPE] == noJoueur) return false;
+
+        return true;
+    }
+
+    public static boolean estUnCasTroisOptimal(ArrayList<int[]> ligne, int bloc, int noJoueur){
+        if (bloc - 1 < 0 || bloc + 1 == ligne.size()) return false;
+
+        int[] blocGauche = ligne.get(bloc - 1);
+        int[] blocDroite = ligne.get(bloc + 1);
+
+        if (blocGauche[INDEX_TYPE] != BLOC_VIDE || blocDroite[INDEX_TYPE] != BLOC_VIDE) return false;
+        if (blocGauche[INDEX_LONG] < 2 || blocDroite[INDEX_LONG] < 2) return false;
+
+        if (bloc - 2 >= 0 && ligne.get(bloc - 2)[INDEX_TYPE] == noJoueur) return false;
+        if (bloc + 2 < ligne.size() && ligne.get(bloc + 2)[INDEX_TYPE] == noJoueur) return false;
+
+        return true;
+    }
+
+    public static boolean estUnCasQuatreOptimal(ArrayList<int[]> ligne, int bloc, int noJoueur){
         if (bloc - 1 < 0 || bloc + 1 == ligne.size()) return false;
         int[] blocGauche = ligne.get(bloc - 1);
         int[] blocDroite = ligne.get(bloc + 1);
@@ -569,6 +627,27 @@ public class UtilitaireGrille {
         if(blocDroite[INDEX_LONG] == 1 && bloc + 2 < ligne.size() && ligne.get(bloc + 2)[INDEX_TYPE] == noJoueur) return false;
 
         return true;
+    }
+
+    public static int setPoidsPions(int nbPions){
+        int poids = 0;
+        switch (nbPions){
+            case 1:
+                poids = PION1;
+                break;
+            case 2:
+                poids = PION2;
+                break;
+            case 3:
+                poids = PION3;
+                break;
+            case 4:
+                poids = PION4;
+                break;
+            default:
+                poids = -1;
+        }
+        return poids;
     }
 
 }
